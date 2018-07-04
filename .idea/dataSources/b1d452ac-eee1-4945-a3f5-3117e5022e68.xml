@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="Fortisure_Data@127.0.0.1">
+  <database-model serializer="dbm" rdbms="MSSQL" format-version="4.8">
+    <root id="1">
+      <ServerVersion>14.0.302</ServerVersion>
+      <ServerType>standalone</ServerType>
+    </root>
+    <database id="2" parent="1" name="Fortisure_Data">
+      <ObjectId>5</ObjectId>
+      <Current>1</Current>
+      <Visible>1</Visible>
+    </database>
+    <database id="3" parent="1" name="master">
+      <ObjectId>1</ObjectId>
+    </database>
+    <database id="4" parent="1" name="tempdb">
+      <ObjectId>2</ObjectId>
+    </database>
+    <database id="5" parent="1" name="model">
+      <ObjectId>3</ObjectId>
+    </database>
+    <database id="6" parent="1" name="msdb">
+      <ObjectId>4</ObjectId>
+    </database>
+    <schema id="7" parent="2" name="dbo">
+      <ObjectId>1</ObjectId>
+      <IntrospectionTimestamp>2018-07-01.15:22:38.290</IntrospectionTimestamp>
+      <Current>1</Current>
+      <Visible>1</Visible>
+      <DescriptionsCheckSum>1986423983</DescriptionsCheckSum>
+    </schema>
+    <schema id="8" parent="2" name="guest">
+      <ObjectId>2</ObjectId>
+    </schema>
+    <schema id="9" parent="2" name="INFORMATION_SCHEMA">
+      <ObjectId>3</ObjectId>
+    </schema>
+    <schema id="10" parent="2" name="sys">
+      <ObjectId>4</ObjectId>
+    </schema>
+    <schema id="11" parent="2" name="db_owner">
+      <ObjectId>16384</ObjectId>
+    </schema>
+    <schema id="12" parent="2" name="db_accessadmin">
+      <ObjectId>16385</ObjectId>
+    </schema>
+    <schema id="13" parent="2" name="db_securityadmin">
+      <ObjectId>16386</ObjectId>
+    </schema>
+    <schema id="14" parent="2" name="db_ddladmin">
+      <ObjectId>16387</ObjectId>
+    </schema>
+    <schema id="15" parent="2" name="db_backupoperator">
+      <ObjectId>16389</ObjectId>
+    </schema>
+    <schema id="16" parent="2" name="db_datareader">
+      <ObjectId>16390</ObjectId>
+    </schema>
+    <schema id="17" parent="2" name="db_datawriter">
+      <ObjectId>16391</ObjectId>
+    </schema>
+    <schema id="18" parent="2" name="db_denydatareader">
+      <ObjectId>16392</ObjectId>
+    </schema>
+    <schema id="19" parent="2" name="db_denydatawriter">
+      <ObjectId>16393</ObjectId>
+    </schema>
+    <table id="20" parent="7" name="Course_Sessions">
+      <ObjectId>885578193</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.750</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.897</ModifiedTimestamp>
+    </table>
+    <table id="21" parent="7" name="Courses">
+      <ObjectId>917578307</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.780</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.900</ModifiedTimestamp>
+    </table>
+    <table id="22" parent="7" name="Employee_Info">
+      <ObjectId>981578535</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.793</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.873</ModifiedTimestamp>
+    </table>
+    <table id="23" parent="7" name="Roles">
+      <ObjectId>1013578649</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.800</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.913</ModifiedTimestamp>
+    </table>
+    <table id="24" parent="7" name="User_Info">
+      <ObjectId>1061578820</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.813</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.903</ModifiedTimestamp>
+    </table>
+    <table id="25" parent="7" name="User_Roles">
+      <ObjectId>1093578934</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.827</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.923</ModifiedTimestamp>
+    </table>
+    <table id="26" parent="7" name="Users">
+      <ObjectId>1125579048</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.847</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.923</ModifiedTimestamp>
+    </table>
+    <column id="27" parent="20" name="id">
+      <Position>1</Position>
+      <DefaultConstraintName>DF_Course_Sessions_id</DefaultConstraintName>
+      <DefaultExpression>newid()</DefaultExpression>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="28" parent="20" name="course_id">
+      <Position>2</Position>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="29" parent="20" name="session_number">
+      <Position>3</Position>
+      <DataType>int|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="30" parent="20" name="title">
+      <Position>4</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+    </column>
+    <column id="31" parent="20" name="description">
+      <Position>5</Position>
+      <DataType>varchar(500 char)|0s</DataType>
+    </column>
+    <column id="32" parent="20" name="start_datetime">
+      <Position>6</Position>
+      <DataType>datetime|0s</DataType>
+    </column>
+    <index id="33" parent="20" name="PK_Course_Sessions">
+      <Position>1</Position>
+      <ColNames>id</ColNames>
+      <Clustering>1</Clustering>
+      <Unique>1</Unique>
+    </index>
+    <key id="34" parent="20" name="PK_Course_Sessions">
+      <ObjectId>901578250</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.770</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.770</ModifiedTimestamp>
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>PK_Course_Sessions</UnderlyingIndexName>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="35" parent="20" name="FK_Course_Sessions_Courses">
+      <ObjectId>1285579618</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.897</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.897</ModifiedTimestamp>
+      <ColNames>course_id</ColNames>
+      <RefTableId>917578307</RefTableId>
+      <RefSchemaName>dbo</RefSchemaName>
+      <RefTableName>Courses</RefTableName>
+      <RefKeyName>PK_Courses</RefKeyName>
+      <RefColNames>id</RefColNames>
+    </foreign-key>
+    <default id="36" parent="20" name="DF_Course_Sessions_id">
+      <ObjectId>1157579162</ObjectId>
+      <ColNames>id</ColNames>
+      <DefaultExpression>newid()</DefaultExpression>
+    </default>
+    <column id="37" parent="21" name="id">
+      <Position>1</Position>
+      <DefaultConstraintName>DF_Courses_id</DefaultConstraintName>
+      <DefaultExpression>newid()</DefaultExpression>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="38" parent="21" name="code">
+      <Position>2</Position>
+      <DataType>varchar(20 char)|0s</DataType>
+    </column>
+    <column id="39" parent="21" name="name">
+      <Position>3</Position>
+      <DataType>varchar(100 char)|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="40" parent="21" name="description">
+      <Position>4</Position>
+      <DataType>varchar(1000 char)|0s</DataType>
+    </column>
+    <index id="41" parent="21" name="PK_Courses">
+      <Position>1</Position>
+      <ColNames>id</ColNames>
+      <Clustering>1</Clustering>
+      <Unique>1</Unique>
+    </index>
+    <index id="42" parent="21" name="UQ_Course_Names">
+      <Position>2</Position>
+      <ColNames>name</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <index id="43" parent="21" name="UQ_Course_Codes">
+      <Position>3</Position>
+      <ColNames>code</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="44" parent="21" name="PK_Courses">
+      <ObjectId>933578364</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.780</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.780</ModifiedTimestamp>
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>PK_Courses</UnderlyingIndexName>
+      <Primary>1</Primary>
+    </key>
+    <key id="45" parent="21" name="UQ_Course_Codes">
+      <ObjectId>965578478</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.780</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.780</ModifiedTimestamp>
+      <ColNames>code</ColNames>
+      <UnderlyingIndexName>UQ_Course_Codes</UnderlyingIndexName>
+    </key>
+    <key id="46" parent="21" name="UQ_Course_Names">
+      <ObjectId>949578421</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.780</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.780</ModifiedTimestamp>
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>UQ_Course_Names</UnderlyingIndexName>
+    </key>
+    <default id="47" parent="21" name="DF_Courses_id">
+      <ObjectId>1173579219</ObjectId>
+      <ColNames>id</ColNames>
+      <DefaultExpression>newid()</DefaultExpression>
+    </default>
+    <column id="48" parent="22" name="id">
+      <Position>1</Position>
+      <DefaultConstraintName>DF_Employee_Info_id</DefaultConstraintName>
+      <DefaultExpression>newid()</DefaultExpression>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="49" parent="22" name="user_id">
+      <Position>2</Position>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="50" parent="22" name="title">
+      <Position>3</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="51" parent="22" name="department">
+      <Position>4</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+    </column>
+    <column id="52" parent="22" name="manager_id">
+      <Position>5</Position>
+      <DataType>uniqueidentifier|0s</DataType>
+    </column>
+    <column id="53" parent="22" name="start_date">
+      <Position>6</Position>
+      <DefaultConstraintName>DF_Employee_Info_start_date</DefaultConstraintName>
+      <DefaultExpression>CONVERT([date],getdate())</DefaultExpression>
+      <DataType>date|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="54" parent="22" name="PK_Employee_Info">
+      <Position>1</Position>
+      <ColNames>id</ColNames>
+      <Clustering>1</Clustering>
+      <Unique>1</Unique>
+    </index>
+    <key id="55" parent="22" name="PK_Employee_Info">
+      <ObjectId>997578592</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.793</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.793</ModifiedTimestamp>
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>PK_Employee_Info</UnderlyingIndexName>
+      <Primary>1</Primary>
+    </key>
+    <default id="56" parent="22" name="DF_Employee_Info_id">
+      <ObjectId>1189579276</ObjectId>
+      <ColNames>id</ColNames>
+      <DefaultExpression>newid()</DefaultExpression>
+    </default>
+    <default id="57" parent="22" name="DF_Employee_Info_start_date">
+      <ObjectId>1205579333</ObjectId>
+      <ColNames>start_date</ColNames>
+      <DefaultExpression>CONVERT([date],getdate())</DefaultExpression>
+    </default>
+    <column id="58" parent="23" name="id">
+      <Position>1</Position>
+      <DefaultConstraintName>DF_Roles_id</DefaultConstraintName>
+      <DefaultExpression>newid()</DefaultExpression>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="59" parent="23" name="name">
+      <Position>2</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="60" parent="23" name="description">
+      <Position>3</Position>
+      <DataType>varchar(500 char)|0s</DataType>
+    </column>
+    <index id="61" parent="23" name="PK_Roles">
+      <Position>1</Position>
+      <ColNames>id</ColNames>
+      <Clustering>1</Clustering>
+      <Unique>1</Unique>
+    </index>
+    <index id="62" parent="23" name="UQ_Roles">
+      <Position>2</Position>
+      <ColNames>name</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="63" parent="23" name="PK_Roles">
+      <ObjectId>1029578706</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.800</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.800</ModifiedTimestamp>
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>PK_Roles</UnderlyingIndexName>
+      <Primary>1</Primary>
+    </key>
+    <key id="64" parent="23" name="UQ_Roles">
+      <ObjectId>1045578763</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.803</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.803</ModifiedTimestamp>
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>UQ_Roles</UnderlyingIndexName>
+    </key>
+    <default id="65" parent="23" name="DF_Roles_id">
+      <ObjectId>1221579390</ObjectId>
+      <ColNames>id</ColNames>
+      <DefaultExpression>newid()</DefaultExpression>
+    </default>
+    <column id="66" parent="24" name="id">
+      <Position>1</Position>
+      <DefaultConstraintName>DF_User_Info_id</DefaultConstraintName>
+      <DefaultExpression>newid()</DefaultExpression>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="67" parent="24" name="user_id">
+      <Position>2</Position>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="68" parent="24" name="preferred_name">
+      <Position>3</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+    </column>
+    <column id="69" parent="24" name="gender">
+      <Position>4</Position>
+      <DataType>varchar(10 char)|0s</DataType>
+    </column>
+    <column id="70" parent="24" name="date_of_birth">
+      <Position>5</Position>
+      <DataType>date|0s</DataType>
+    </column>
+    <column id="71" parent="24" name="email">
+      <Position>6</Position>
+      <DataType>varchar(100 char)|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="72" parent="24" name="phone_primary">
+      <Position>7</Position>
+      <DataType>varchar(20 char)|0s</DataType>
+    </column>
+    <column id="73" parent="24" name="phone_secondary">
+      <Position>8</Position>
+      <DataType>varchar(20 char)|0s</DataType>
+    </column>
+    <column id="74" parent="24" name="address1">
+      <Position>9</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+    </column>
+    <column id="75" parent="24" name="address2">
+      <Position>10</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+    </column>
+    <column id="76" parent="24" name="city">
+      <Position>11</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+    </column>
+    <column id="77" parent="24" name="state">
+      <Position>12</Position>
+      <DataType>char(2 char)|0s</DataType>
+    </column>
+    <column id="78" parent="24" name="zip">
+      <Position>13</Position>
+      <DataType>varchar(10 char)|0s</DataType>
+    </column>
+    <column id="79" parent="24" name="bio">
+      <Position>14</Position>
+      <DataType>text|0s</DataType>
+    </column>
+    <index id="80" parent="24" name="PK_User_Info">
+      <Position>1</Position>
+      <ColNames>id</ColNames>
+      <Clustering>1</Clustering>
+      <Unique>1</Unique>
+    </index>
+    <key id="81" parent="24" name="PK_User_Info">
+      <ObjectId>1077578877</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.817</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.817</ModifiedTimestamp>
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>PK_User_Info</UnderlyingIndexName>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="82" parent="24" name="FK_User_Info_Users">
+      <ObjectId>1301579675</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.903</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.903</ModifiedTimestamp>
+      <ColNames>user_id</ColNames>
+      <RefTableId>1125579048</RefTableId>
+      <RefSchemaName>dbo</RefSchemaName>
+      <RefTableName>Users</RefTableName>
+      <RefKeyName>PK_Users</RefKeyName>
+      <RefColNames>id</RefColNames>
+    </foreign-key>
+    <default id="83" parent="24" name="DF_User_Info_id">
+      <ObjectId>1237579447</ObjectId>
+      <ColNames>id</ColNames>
+      <DefaultExpression>newid()</DefaultExpression>
+    </default>
+    <column id="84" parent="25" name="id">
+      <Position>1</Position>
+      <DefaultConstraintName>DF_User_Roles_id</DefaultConstraintName>
+      <DefaultExpression>newid()</DefaultExpression>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="85" parent="25" name="user_id">
+      <Position>2</Position>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="86" parent="25" name="role_id">
+      <Position>3</Position>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="87" parent="25" name="PK_User_Roles">
+      <Position>1</Position>
+      <ColNames>id</ColNames>
+      <Clustering>1</Clustering>
+      <Unique>1</Unique>
+    </index>
+    <index id="88" parent="25" name="UQ_Users_and_Roles">
+      <Position>2</Position>
+      <ColNames>role_id
+user_id</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="89" parent="25" name="PK_User_Roles">
+      <ObjectId>1109578991</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.827</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.827</ModifiedTimestamp>
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>PK_User_Roles</UnderlyingIndexName>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="90" parent="25" name="FK_User_Roles_UserID">
+      <ObjectId>1333579789</ObjectId>
+      <Comment>user_id references id on Users</Comment>
+      <CreatedTimestamp>2018-06-28.10:36:32.923</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.923</ModifiedTimestamp>
+      <ColNames>user_id</ColNames>
+      <RefTableId>1125579048</RefTableId>
+      <RefSchemaName>dbo</RefSchemaName>
+      <RefTableName>Users</RefTableName>
+      <RefKeyName>PK_Users</RefKeyName>
+      <RefColNames>id</RefColNames>
+      <OnUpdate>cascade</OnUpdate>
+      <OnDelete>cascade</OnDelete>
+    </foreign-key>
+    <foreign-key id="91" parent="25" name="FK_User_Roles_RoleID">
+      <ObjectId>1317579732</ObjectId>
+      <Comment>role_id references id on Roles</Comment>
+      <CreatedTimestamp>2018-06-28.10:36:32.913</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.913</ModifiedTimestamp>
+      <ColNames>role_id</ColNames>
+      <RefTableId>1013578649</RefTableId>
+      <RefSchemaName>dbo</RefSchemaName>
+      <RefTableName>Roles</RefTableName>
+      <RefKeyName>PK_Roles</RefKeyName>
+      <RefColNames>id</RefColNames>
+      <OnUpdate>cascade</OnUpdate>
+      <OnDelete>cascade</OnDelete>
+    </foreign-key>
+    <default id="92" parent="25" name="DF_User_Roles_id">
+      <ObjectId>1253579504</ObjectId>
+      <ColNames>id</ColNames>
+      <DefaultExpression>newid()</DefaultExpression>
+    </default>
+    <column id="93" parent="26" name="id">
+      <Position>1</Position>
+      <DefaultConstraintName>DF_Users_id</DefaultConstraintName>
+      <DefaultExpression>newid()</DefaultExpression>
+      <DataType>uniqueidentifier|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="94" parent="26" name="first_name">
+      <Position>2</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="95" parent="26" name="last_name">
+      <Position>3</Position>
+      <DataType>varchar(50 char)|0s</DataType>
+    </column>
+    <column id="96" parent="26" name="username">
+      <Position>4</Position>
+      <DataType>varchar(100 char)|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="97" parent="26" name="PK_Users">
+      <Position>1</Position>
+      <ColNames>id</ColNames>
+      <Clustering>1</Clustering>
+      <Unique>1</Unique>
+    </index>
+    <index id="98" parent="26" name="UQ_Usernames">
+      <Position>2</Position>
+      <ColNames>username</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="99" parent="26" name="PK_Users">
+      <ObjectId>1141579105</ObjectId>
+      <CreatedTimestamp>2018-06-28.10:36:32.847</CreatedTimestamp>
+      <ModifiedTimestamp>2018-06-28.10:36:32.847</ModifiedTimestamp>
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>PK_Users</UnderlyingIndexName>
+      <Primary>1</Primary>
+    </key>
+    <default id="100" parent="26" name="DF_Users_id">
+      <ObjectId>1269579561</ObjectId>
+      <ColNames>id</ColNames>
+      <DefaultExpression>newid()</DefaultExpression>
+    </default>
+  </database-model>
+</dataSource>
