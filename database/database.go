@@ -84,6 +84,16 @@ func DbSelect(dbconn *sql.DB, stmt Statement) map[int]map[string]interface{} {
 
 }
 
+func DbCreate (dbconn *sql.DB, stmt Statement) (sql.Result, error) {
+
+	query, err := dbconn.Prepare(stmt.MergedStmt())
+
+	result, err := query.Exec()
+
+	return result, err
+
+}
+
 // Replaces strings following {{pattern}} with corresponding Param value for "pattern"
 func (s *Statement) MergedStmt() string {
 	var sqlMerged string = s.Sql
