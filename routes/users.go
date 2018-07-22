@@ -10,10 +10,13 @@ import (
 
 func GetUsers(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT cast(u.id AS char(36)) AS id, u.first_name, u.last_name, u.username 
+	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username 
 									FROM Users u` }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 
@@ -23,10 +26,13 @@ func GetUsers(w http.ResponseWriter, r *http.Request){
 
 func GetRoles(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT cast(r.id AS char(36)) AS id, r.name, r.description 
+	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description 
 									FROM Roles r` }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 
@@ -36,10 +42,13 @@ func GetRoles(w http.ResponseWriter, r *http.Request){
 
 func GetRole(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT cast(r.id AS char(36)) AS id, r.name, r.description 
-										FROM Roles r WHERE r.id = '{{id}}'`, Params: mux.Vars(r) }
+	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description 
+										FROM Roles r WHERE r.id = {{id}}`, Params: mux.Vars(r) }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 
@@ -49,12 +58,15 @@ func GetRole(w http.ResponseWriter, r *http.Request){
 
 func GetRoleUsers(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT cast(u.id AS char(36)) AS id, u.first_name, u.last_name, u.username, cast(r.id AS char(36)) as role_id, r.name as role_name
+	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username, r.id as role_id, r.name as role_name
 										FROM Users u
 										INNER JOIN User_Roles ur on ur.user_id = u.id
-										INNER JOIN Roles r on ur.role_id = r.id WHERE r.id = '{{id}}'`, Params: mux.Vars(r) }
+										INNER JOIN Roles r on ur.role_id = r.id WHERE r.id = {{id}}`, Params: mux.Vars(r) }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 
@@ -64,10 +76,32 @@ func GetRoleUsers(w http.ResponseWriter, r *http.Request){
 
 func GetUser(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT cast(u.id AS char(36)) AS id, u.first_name, u.last_name, u.username 
-										FROM Users u WHERE u.id = '{{id}}'`, Params: mux.Vars(r) }
+	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username 
+										FROM Users u WHERE u.id = {{id}}`, Params: mux.Vars(r) }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	jsonString, _ := json.Marshal(result[0])
+
+	fmt.Fprintf(w, "%s", jsonString)
+
+}
+
+func GetUserRoles(w http.ResponseWriter, r *http.Request){
+
+	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description, u.id AS user_id, u.first_name, u.last_name, u.username
+										FROM Roles r
+  											INNER JOIN User_Roles ur on ur.role_id = r.id
+											INNER JOIN Users u on ur.user_id = u.id 
+										WHERE u.id = {{id}}`, Params: mux.Vars(r) }
+
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 

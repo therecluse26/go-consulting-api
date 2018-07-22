@@ -10,10 +10,13 @@ import (
 
 func GetCourses(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT cast(c.id AS char(36)) AS id, c.code, c.name, c.description 
+	sql := database.Statement{ Sql: `SELECT c.id, c.code, c.name, c.description 
 									FROM Courses c` }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 
@@ -23,11 +26,14 @@ func GetCourses(w http.ResponseWriter, r *http.Request){
 
 func GetCourse(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: "SELECT cast(id as char(36)) AS id, code, name, description FROM Courses WHERE code = '{{code}}'", Params: mux.Vars(r) }
+	sql := database.Statement{ Sql: "SELECT c.id, c.code, c.name, c.description FROM Courses c WHERE c.id = {{course_id}}", Params: mux.Vars(r) }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
-	jsonString, _ := json.Marshal(result)
+	jsonString, _ := json.Marshal(result[0])
 
 	fmt.Fprintf(w, "%s", jsonString)
 
@@ -62,11 +68,14 @@ func NewCourse(w http.ResponseWriter, r *http.Request){
 
 func GetCourseSessions(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT CAST(cs.id as char(36)) AS id, cs.session_number, cs.title, cs.description, cs.start_datetime FROM Courses c 
+	sql := database.Statement{ Sql: `SELECT cs.id, cs.session_number, cs.title, cs.description, cs.start_datetime FROM Courses c 
 									INNER JOIN Course_Sessions cs ON cs.course_id = c.id
-									WHERE c.code = '{{code}}' ORDER BY cs.session_number`, Params: mux.Vars(r) }
+									WHERE c.id = {{course_id}} ORDER BY cs.session_number`, Params: mux.Vars(r) }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 
@@ -76,11 +85,14 @@ func GetCourseSessions(w http.ResponseWriter, r *http.Request){
 
 func GetCourseSession(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT CAST(cs.id as char(36)) AS id, cs.session_number, cs.title, cs.description, cs.start_datetime FROM Courses c 
+	sql := database.Statement{ Sql: `SELECT cs.id, cs.session_number, cs.title, cs.description, cs.start_datetime FROM Courses c 
 									INNER JOIN Course_Sessions cs ON cs.course_id = c.id
-									WHERE c.code = '{{code}}' and cs.session_number = {{session_number}}`, Params: mux.Vars(r) }
+									WHERE c.id = {{course_id}} and cs.id = {{session_id}}`, Params: mux.Vars(r) }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 
@@ -91,7 +103,6 @@ func GetCourseSession(w http.ResponseWriter, r *http.Request){
 func NewCourseSession(w http.ResponseWriter, r *http.Request){
 
 	r.ParseForm()
-
 
 	courseSessionData := map[string]string{ "course_id": r.Form.Get("course_id"),  "session_number": r.Form.Get("session_number"), "title": r.Form.Get("title"), "description": r.Form.Get("description"), "start_datetime": r.Form.Get("start_datetime") }
 
@@ -115,12 +126,15 @@ func NewCourseSession(w http.ResponseWriter, r *http.Request){
 
 func GetAllCourseData(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT cast(c.id AS char(36)) AS id, c.code, c.name, c.description,
-										(SELECT CAST(cs.id as char(36)) AS id, cs.session_number, cs.title, cs.description, cs.start_datetime FROM Course_Sessions cs 
+	sql := database.Statement{ Sql: `SELECT c.id, c.code, c.name, c.description,
+										(SELECT id, cs.session_number, cs.title, cs.description, cs.start_datetime FROM Course_Sessions cs 
     									WHERE cs.course_id = c.id ORDER BY cs.session_number FOR JSON PATH) as sessions
 									FROM Courses c` }
 
-	result := database.DbSelect(database.Dbconn, sql)
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	jsonString, _ := json.Marshal(result)
 
@@ -128,3 +142,21 @@ func GetAllCourseData(w http.ResponseWriter, r *http.Request){
 
 }
 
+func GetCourseRegistrations(w http.ResponseWriter, r *http.Request){
+
+	sql := database.Statement{ Sql: `SELECT cr.student_id, u.first_name, u.last_name, u.username, si.major
+    									FROM Course_Registrations cr
+    									INNER JOIN Student_Info si on si.user_id = cr.student_id
+										INNER JOIN Users u on u.id = cr.student_id
+									WHERE cr.course_id = {{course_id}}`, Params: mux.Vars(r) }
+
+	result, err := database.DbSelect(database.Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	jsonString, _ := json.Marshal(result)
+
+	fmt.Fprintf(w, "%s", jsonString)
+
+}

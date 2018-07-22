@@ -9,7 +9,7 @@ import (
 )
 
 var Dbconn *sql.DB
-var dberr error
+var Dberr error
 
 type Statement struct {
 	Sql string
@@ -21,14 +21,13 @@ func DbConnection(conf config.Configuration) {
 
 	dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s", conf.SqlHost, conf.SqlUser, conf.SqlPass, conf.SqlPort, conf.SqlDB)
 
-	Dbconn, dberr = sql.Open("mssql", dsn)
-	if dberr != nil {
-		fmt.Println(dberr.Error())
+	Dbconn, Dberr = sql.Open("mssql", dsn)
+	if Dberr != nil {
+		fmt.Println(Dberr.Error())
 	}
-
 }
 
-func DbSelect(dbconn *sql.DB, stmt Statement) map[int]map[string]interface{} {
+func DbSelect(dbconn *sql.DB, stmt Statement) (map[int]map[string]interface{}, error) {
 
 	// Runs Database query
 	rows, err := dbconn.Query(stmt.MergedStmt())
@@ -80,7 +79,7 @@ func DbSelect(dbconn *sql.DB, stmt Statement) map[int]map[string]interface{} {
 
 	rows.Close()
 
-	return allResults
+	return allResults, err
 
 }
 
