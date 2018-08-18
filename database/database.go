@@ -2,10 +2,12 @@ package database
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
-	"../config"
+	"../config/mainconf"
+	"net/http"
+	"log"
 )
 
 var Dbconn *sql.DB
@@ -16,8 +18,10 @@ type Statement struct {
 	Params map[string]string
 }
 
-// Establishes database conection
-func DbConnection(conf config.Configuration) {
+/**
+* Establishes database connection
+*/
+func DbConnection(conf mainconf.Configuration) {
 
 	dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s", conf.SqlHost, conf.SqlUser, conf.SqlPass, conf.SqlPort, conf.SqlDB)
 
@@ -27,6 +31,9 @@ func DbConnection(conf config.Configuration) {
 	}
 }
 
+/**
+* Performs SELECT query
+*/
 func DbSelect(dbconn *sql.DB, stmt Statement) (map[int]map[string]interface{}, error) {
 
 	// Runs Database query
@@ -83,6 +90,9 @@ func DbSelect(dbconn *sql.DB, stmt Statement) (map[int]map[string]interface{}, e
 
 }
 
+/**
+* Performs INSERT statement
+*/
 func DbCreate (dbconn *sql.DB, stmt Statement) (sql.Result, error) {
 
 	query, err := dbconn.Prepare(stmt.MergedStmt())
@@ -93,11 +103,33 @@ func DbCreate (dbconn *sql.DB, stmt Statement) (sql.Result, error) {
 
 }
 
-// Replaces strings following {{pattern}} with corresponding Param value for "pattern"
+/**
+* Replaces strings following {{pattern}} with corresponding Param value for "pattern"
+*/
 func (s *Statement) MergedStmt() string {
 	var sqlMerged string = s.Sql
 	for k, v := range s.Params {
 		sqlMerged = strings.Replace(sqlMerged, "{{" + k + "}}", v, -1)
 	}
 	return sqlMerged
+}
+
+/**
+* Selects and formats select result sets as JSON
+*/
+func SelectAndReturnJson (sql Statement, w http.ResponseWriter) {
+
+	// Gets result set from DbSelect method
+	result, err := DbSelect(Dbconn, sql)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	// Formats result set as JSON
+	jsonString, _ := json.Marshal(result)
+
+	// Writes JSON string to http.ResponseWriter
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(jsonString))
 }

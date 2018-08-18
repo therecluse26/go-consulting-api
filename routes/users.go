@@ -3,109 +3,94 @@ package routes
 import (
 	"net/http"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"../database"
+	"github.com/auth0/go-jwt-middleware"
 )
+
+func SetUserRoutes(router *mux.Router, middleware *jwtmiddleware.JWTMiddleware){
+	// User Paths
+	router.HandleFunc("/users", GetUsers).Methods("GET")
+	router.HandleFunc("/users", NewUser).Methods("PUT")
+	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
+	router.HandleFunc("/users/{id}/info", GetUserInfo).Methods("GET")
+	router.HandleFunc("/users/{id}/roles", GetUserRoles).Methods("GET")
+
+	// Role Paths
+	router.HandleFunc("/roles", GetRoles).Methods("GET")
+	router.HandleFunc("/roles/{id}", GetRole).Methods("GET")
+	router.HandleFunc("/roles/{id}/users", GetRoleUsers).Methods("GET")
+}
 
 func GetUsers(w http.ResponseWriter, r *http.Request){
 
 	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username 
-									FROM Users u` }
+									FROM People.Users u` }
 
-	result, err := database.DbSelect(database.Dbconn, sql)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	jsonString, _ := json.Marshal(result)
-
-	fmt.Fprintf(w, "%s", jsonString)
+	database.SelectAndReturnJson(sql, w)
 
 }
 
 func GetRoles(w http.ResponseWriter, r *http.Request){
 
 	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description 
-									FROM Roles r` }
+									FROM Company.Roles r` }
 
-	result, err := database.DbSelect(database.Dbconn, sql)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	jsonString, _ := json.Marshal(result)
-
-	fmt.Fprintf(w, "%s", jsonString)
+	database.SelectAndReturnJson(sql, w)
 
 }
 
 func GetRole(w http.ResponseWriter, r *http.Request){
 
 	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description 
-										FROM Roles r WHERE r.id = {{id}}`, Params: mux.Vars(r) }
+										FROM Company.Roles r WHERE r.id = {{id}}`, Params: mux.Vars(r) }
 
-	result, err := database.DbSelect(database.Dbconn, sql)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	jsonString, _ := json.Marshal(result)
-
-	fmt.Fprintf(w, "%s", jsonString)
+	database.SelectAndReturnJson(sql, w)
 
 }
 
 func GetRoleUsers(w http.ResponseWriter, r *http.Request){
 
 	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username, r.id as role_id, r.name as role_name
-										FROM Users u
-										INNER JOIN User_Roles ur on ur.user_id = u.id
-										INNER JOIN Roles r on ur.role_id = r.id WHERE r.id = {{id}}`, Params: mux.Vars(r) }
+										FROM People.Users u
+										INNER JOIN People.User_Roles ur on ur.user_id = u.id
+										INNER JOIN Company.Roles r on ur.role_id = r.id WHERE r.id = {{id}}`, Params: mux.Vars(r) }
 
-	result, err := database.DbSelect(database.Dbconn, sql)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	jsonString, _ := json.Marshal(result)
-
-	fmt.Fprintf(w, "%s", jsonString)
+	database.SelectAndReturnJson(sql, w)
 
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request){
 
 	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username 
-										FROM Users u WHERE u.id = {{id}}`, Params: mux.Vars(r) }
+										FROM People.Users u WHERE u.id = {{id}}`, Params: mux.Vars(r) }
 
-	result, err := database.DbSelect(database.Dbconn, sql)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	database.SelectAndReturnJson(sql, w)
 
-	jsonString, _ := json.Marshal(result[0])
+}
 
-	fmt.Fprintf(w, "%s", jsonString)
+func GetUserInfo(w http.ResponseWriter, r *http.Request){
+
+	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username, ui.preferred_name,
+										ui.gender, ui.date_of_birth, ui.email, ui.phone_primary, ui.phone_secondary,
+										ui.address1, ui.address2, ui.city, ui.state, ui.zip, ui.bio
+									FROM People.Users u
+										INNER JOIN People.User_Info ui on ui.user_id = u.id
+									WHERE u.id = {{id}}`, Params: mux.Vars(r) }
+
+	database.SelectAndReturnJson(sql, w)
 
 }
 
 func GetUserRoles(w http.ResponseWriter, r *http.Request){
 
-	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description, u.id AS user_id, u.first_name, u.last_name, u.username
-										FROM Roles r
-  											INNER JOIN User_Roles ur on ur.role_id = r.id
-											INNER JOIN Users u on ur.user_id = u.id 
+	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description
+										FROM Company.Roles r
+  											INNER JOIN People.User_Roles ur on ur.role_id = r.id
+											INNER JOIN People.Users u on ur.user_id = u.id 
 										WHERE u.id = {{id}}`, Params: mux.Vars(r) }
 
-	result, err := database.DbSelect(database.Dbconn, sql)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	jsonString, _ := json.Marshal(result)
-
-	fmt.Fprintf(w, "%s", jsonString)
+	database.SelectAndReturnJson(sql, w)
 
 }
 
@@ -115,7 +100,7 @@ func NewUser(w http.ResponseWriter, r *http.Request){
 
 	courseData := map[string]string{ "code": r.Form.Get("code"), "name": r.Form.Get("name"), "description": r.Form.Get("description")  }
 
-	sql := database.Statement{ Sql: `INSERT INTO Courses (code, name, description) VALUES ('{{code}}', '{{name}}', '{{description}}')`, Params: courseData }
+	sql := database.Statement{ Sql: ``, Params: courseData }
 
 	_, err := database.DbCreate(database.Dbconn, sql)
 
@@ -126,12 +111,15 @@ func NewUser(w http.ResponseWriter, r *http.Request){
 		res["status"] = "error"
 		res["data"] = err.Error()
 		returnVal, _ := json.Marshal(res)
-		fmt.Fprintf(w, "%s", returnVal)
 
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(returnVal))
 	} else {
 		res["status"] = "success"
 		returnVal, _ := json.Marshal(res)
-		fmt.Fprintf(w, "%s", returnVal)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(returnVal))
 	}
 
 }

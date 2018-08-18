@@ -2,78 +2,70 @@ package main
 
 import (
 	_ "github.com/denisenkom/go-mssqldb"
-	"./config"
+	"./config/mainconf"
 	_ "github.com/jinzhu/gorm/dialects/mssql"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/handlers"
 	"fmt"
 	"strconv"
-	"log"
 	"net/http"
 	"./routes"
 	"./database"
+	"./controllers"
+	"os"
 )
 
 // Initializes variables in global scope
-var conf config.Configuration
-
+var conf mainconf.Configuration
+var AuthConf mainconf.AuthConfig
+var Router *mux.Router
+var RouteMap map[int]string
+var RouteCount = 1
 
 func init() {
 
 	// Pulls config variables
-	conf = config.BuildConfig()
+	conf = mainconf.BuildConfig()
+
+	AuthConf = mainconf.GetAuthConfig()
+
+	os.Setenv("AuthHost", AuthConf.AuthHost)
+	os.Setenv("AuthSecret", AuthConf.AuthSecret)
 
 	// Creates database connection
 	database.DbConnection(conf)
+
+	Router = mux.NewRouter().StrictSlash(true)
 
 }
 
 func main() {
 
-	router := mux.NewRouter().StrictSlash(true)
+	// Handle all preflight requests
+	Router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Access-Control-Allow-Origin, Origin, User-Agent, Referer, Cache-Control, X-header")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	})
 
-	/**
-	* Routing Paths
-	*/
-		router.HandleFunc("/", routes.GetStats).Methods("GET")
+	/* Initialize Routing Paths */
 
-		// Course Paths
-		router.HandleFunc("/courses/all", routes.GetAllCourseData).Methods("GET")
-		router.HandleFunc("/courses", routes.GetCourses).Methods("GET")
-		router.HandleFunc("/courses", routes.NewCourse).Methods("PUT")
-		router.HandleFunc("/courses/{course_id}", routes.GetCourse).Methods("GET")
-		//router.HandleFunc("/courses/{code}", routes.UpdateCourse).Methods("POST")
-		//router.HandleFunc("/courses/{code}", routes.DeleteCourse).Methods("DELETE")
-		router.HandleFunc("/courses/{course_id}/registrations", routes.GetCourseRegistrations).Methods("GET")
+	//router.HandleFunc("/", ViewRoutes).Methods("GET")
 
+	Router.HandleFunc("/", routes.GetStats).Methods("GET")
 
-		// Course Session Paths
-		router.HandleFunc("/courses/{course_id}/sessions", routes.GetCourseSessions).Methods("GET")
-		router.HandleFunc("/courses/{course_id}/sessions", routes.NewCourseSession).Methods("PUT")
-		router.HandleFunc("/courses/{course_id}/sessions/{session_id}", routes.GetCourseSession).Methods("GET")
-		//router.HandleFunc("/courses/{code}/sessions/{session_number}", routes.UpdateCourseSession).Methods("POST")
-		//router.HandleFunc("/courses/{code}/sessions/{session_number}", routes.DeleteCourseSession).Methods("DELETE")
+	Router.HandleFunc("/get-token", routes.GetTokenHandler).Methods("GET")
 
-		// User Paths
-		router.HandleFunc("/users", routes.GetUsers).Methods("GET")
-		router.HandleFunc("/users/{id}", routes.GetUser).Methods("GET")
-		router.HandleFunc("/users/{id}/roles", routes.GetUserRoles).Methods("GET")
-		router.HandleFunc("/users", routes.NewUser).Methods("PUT")
-
-		// Role Paths
-		router.HandleFunc("/roles", routes.GetRoles).Methods("GET")
-		router.HandleFunc("/roles/{id}", routes.GetRole).Methods("GET")
-		router.HandleFunc("/roles/{id}/users", routes.GetRoleUsers).Methods("GET")
-
-		// Student Paths
-		router.HandleFunc("/students", routes.GetStudents).Methods("GET")
-		router.HandleFunc("/students/{id}", routes.GetStudent).Methods("GET")
-		router.HandleFunc("/students/{id}", routes.NewStudent).Methods("PUT")
-
-		
-
-		//router.HandleFunc("/roles", routes.NewRole).Methods("PUT")
+	routes.SetCourseRoutes(Router, controllers.JwtMiddleware)
+	routes.SetUserRoutes(Router, controllers.JwtMiddleware)
+	routes.SetStudentRoutes(Router, controllers.JwtMiddleware)
+	routes.SetEmployeeRoutes(Router, controllers.JwtMiddleware)
+	routes.SetProductRoutes(Router, controllers.JwtMiddleware)
+	/*****************************/
 
 	fmt.Println("Listening on port " + strconv.Itoa(conf.ApiPort))
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(conf.ApiPort), router))
+	http.ListenAndServe(":"+strconv.Itoa(conf.ApiPort), handlers.LoggingHandler(os.Stdout, Router))
 
 }

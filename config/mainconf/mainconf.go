@@ -1,4 +1,4 @@
-package config
+package mainconf
 
 import (
 	"github.com/spf13/viper"
@@ -18,8 +18,13 @@ type Configuration struct {
 	ApiPort int
 }
 
-func BuildConfig() Configuration {
+type AuthConfig struct {
+	AuthHost string
+	AuthSecret string
+}
 
+// Initializes config file opener
+func InitConfReader() {
 	viper.SetDefault("Environment", "development")
 	viper.SetDefault("ConfigDir", "config")
 	viper.SetConfigName("config." + viper.GetString("Environment"))
@@ -34,6 +39,12 @@ func BuildConfig() Configuration {
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("Config file changed:", e.Name)
 	})
+}
+
+// Builds primary app configuration object
+func BuildConfig() Configuration {
+
+	InitConfReader()
 
 	conf := Configuration{
 		SqlHost: viper.GetString("sqlHost"),
@@ -47,3 +58,17 @@ func BuildConfig() Configuration {
 	return conf
 
 }
+
+// Builds Auth configuration object
+func GetAuthConfig() AuthConfig {
+
+	InitConfReader()
+
+	authConf := AuthConfig{
+		AuthHost: viper.GetString("AuthHost"),
+		AuthSecret: viper.GetString("AuthSecret"),
+	}
+
+	return authConf
+}
+

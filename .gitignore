@@ -1,3 +1,3 @@
-config
-!config/config.example.json
+config/config.development.json
+config/config.production.json
 .idea
