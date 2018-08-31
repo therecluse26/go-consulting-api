@@ -1,3 +1,5 @@
-config/config.development.json
-config/config.production.json
+src/config/config.development.json
+src/config/config.production.json
+dist/*
+*.lock
 .idea

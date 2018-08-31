@@ -1,0 +1,10 @@
+package: github.com/treeder/dockergo
+import:
+- package: github.com/auth0/go-jwt-middleware
+- package: github.com/denisenkom/go-mssqldb
+- package: github.com/dgrijalva/jwt-go
+- package: github.com/gorilla/handlers
+- package: github.com/gorilla/mux
+- package: github.com/jinzhu/gorm
+  subpackages:
+  - dialects/mssql
