@@ -65,12 +65,10 @@ func main() {
 	routes.SetProductRoutes(Router, controllers.JwtMiddleware)
 	/*****************************/
 
-	fmt.Println(conf.SqlDB)
-	fmt.Println(conf.SqlHost)
-	fmt.Println(conf.SqlPort)
-	fmt.Println(conf.SqlUser)
+	//fmt.Println(strconv.Itoa(conf.ApiPort))
 
 	fmt.Println("Listening on port " + strconv.Itoa(conf.ApiPort))
+
 	http.ListenAndServe(":"+strconv.Itoa(conf.ApiPort), handlers.LoggingHandler(os.Stdout, Router))
 
 }

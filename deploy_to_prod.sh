@@ -13,6 +13,17 @@ if [ "$platform" == 'Darwin' ]; then
              brew install jq
        fi
    fi
+elif [ "$platform" == 'Linux' ]; then
+
+    if [ $(which jq) == "" ]; then
+
+        apt install jq
+
+    fi
+else
+
+    echo "Must be run from a Unix-based bash shell. If you are on Windows, please install the Ubuntu package and try again from there."
+
 fi
 
 AZUSER=FortisureAPI
@@ -27,6 +38,8 @@ AKV_NAME=FortisureKeys
 echo "Environment Variable JSON (Base64 encoded):"
 read ENV_VARS
 
+export CFGJSON=$(echo $ENV_VARS | base64 -D)
+
 # az acr login --name $AZUSER
 
 az container create \
@@ -36,7 +49,7 @@ az container create \
     --image $CONT_IMG \
     --cpu 1 --memory 1 \
     --dns-name-label $DNSLBL\
-    --environment-variables gocfg64="$ENV_VARS" \
+    --environment-variables CFGJSON="$CFGJSON" \
     --ports 80 443
 
 EXIT_STATUS=$?

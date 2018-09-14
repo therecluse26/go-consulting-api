@@ -3,20 +3,19 @@ package mainconf
 import (
 	"database/sql"
 	"os"
-	"strconv"
 	"encoding/json"
-	"encoding/base64"
+	"fmt"
 )
 
 var Dbconn *sql.DB
 
 type Configuration struct {
-	SqlHost string
-	SqlPort int
-	SqlUser string
-	SqlPass string
-	SqlDB string
-	ApiPort int
+	SqlHost string `json:"SqlHost"`
+	SqlPort int `json:"SqlPort"`
+	SqlUser string `json:"SqlUser"`
+	SqlPass string `json:"SqlPass"`
+	SqlDB string `json:"SqlDB"`
+	ApiPort int `json:"ApiPort"`
 }
 
 type AuthConfig struct {
@@ -24,37 +23,20 @@ type AuthConfig struct {
 	AuthSecret string
 }
 
-var configJson []byte
-var config64 string
+var configJson string
 var configMap map[string]string
 
 // Builds primary app configuration object
 func BuildConfig() Configuration {
 
-	config64 = os.Getenv("gocfg64")
+	configJson = os.Getenv("CFGJSON")
 
-	configJson, _ = base64.StdEncoding.DecodeString(config64)
+	var conf Configuration
 
-	json.Unmarshal(configJson, &configMap)
-
-	apiPort, _ := strconv.Atoi(configMap["apiPort"])
-	sqlPort, _ := strconv.Atoi(configMap["sqlPort"])
-
-	conf := Configuration{
-		SqlHost: configMap["sqlHost"],
-		SqlPort: sqlPort,
-		SqlUser: configMap["sqlUser"],
-		SqlPass: configMap["sqlPass"],
-		SqlDB: configMap["sqlDB"],
-		ApiPort: apiPort,
+	err := json.Unmarshal([]byte(configJson), &conf)
+	if err != nil {
+		fmt.Println("error:", err)
 	}
-
-	/*fmt.Println(apiPort)
-	fmt.Println(sqlPort)
-	fmt.Println(configMap["sqlUser"])
-	fmt.Println(configMap["sqlPass"])
-	fmt.Println(configMap["sqlDB"])
-	fmt.Println(configMap["sqlHost"])*/
 
 	return conf
 

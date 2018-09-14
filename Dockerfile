@@ -6,15 +6,23 @@ FROM iron/go
 WORKDIR /app
 
 # Now just add the binary
-ADD dist/fortisure-api /app/
+COPY dist/fortisure-api /app/
+
+COPY nginx/fortisureapi-nginx.conf /etc/nginx/conf.d/fortisureapi-nginx.conf
+
+CMD /bin/sh -c "apk update && apk add nginx certbot"
+
+CMD /bin/sh -c "wget https://github.com/jwilder/docker-gen/releases/download/0.7.3/docker-gen-alpine-linux-amd64-0.7.3.tar.gz nginx/docker-gen-alpine-linux-amd64-0.7.3.tar.gz && tar xvzf nginx/docker-gen-alpine-linux-amd64-0.7.3.tar.gz"
+
+CMD /bin/sh -c "wget https://dl.eff.org/certbot-auto && chmod a+x certbot-auto && ./certbot-auto --nginx"
+
+CMD /bin/sh -c "export CFGJSON=$(echo $gocfg64 | base64 -d)"
+
+CMD /bin/sh -c "echo $CFGJSON"
 
 ENTRYPOINT ["./fortisure-api"]
-
-CMD echo "testing 123"
-
-CMD echo $config64
 
 EXPOSE 80/tcp
 EXPOSE 80/udp
 EXPOSE 443/tcp
-EXPOSE 443/udp
+EXPOSE 443/udp.

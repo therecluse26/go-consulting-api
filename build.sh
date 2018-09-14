@@ -1,5 +1,15 @@
 #!/bin/bash
 
+set -ex
+
+# SET THE FOLLOWING VARIABLES
+# docker hub username
+USERNAME=fortisureapi
+# image name
+IMAGE=rest-api-go
+
+version=`cat VERSION`
+
 # Save the pwd before we run anything
 PRE_PWD=`pwd`
 
@@ -27,11 +37,16 @@ if [ $EXIT_STATUS == 0 ]; then
 
   cd $PRE_PWD
 
-  docker build -t fortisureit/rest-api-go .
+  docker build --no-cache -t $USERNAME/$IMAGE:latest .
+
+  docker tag $USERNAME/$IMAGE:latest $USERNAME.azurecr.io/$IMAGE:$version
+  docker tag $USERNAME/$IMAGE:latest $USERNAME.azurecr.io/$IMAGE:latest
+
 
   az acr login --name FortisureAPI
 
-  docker push fortisureapi.azurecr.io/rest-api-go:latest
+  docker push $USERNAME.azurecr.io/$IMAGE:$version
+  docker push $USERNAME.azurecr.io/$IMAGE:latest
 
   EXIT_STATUS=$?
 
