@@ -4,4 +4,3 @@ src/config/config.test.json
 dist/*
 *.lock
 .idea
-docker/*
