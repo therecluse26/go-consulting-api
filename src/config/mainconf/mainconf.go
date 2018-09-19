@@ -3,8 +3,8 @@ package mainconf
 import (
 	"database/sql"
 	"os"
-	"encoding/json"
 	"fmt"
+	"encoding/json"
 )
 
 var Dbconn *sql.DB
@@ -26,6 +26,18 @@ type AuthConfig struct {
 var configJson string
 var configMap map[string]string
 
+// Builds Auth configuration object
+func GetAuthConfig() AuthConfig {
+
+	authConf := AuthConfig{
+		AuthHost: os.Getenv("AuthHost"),
+		AuthSecret: os.Getenv("AuthSecret"),
+	}
+
+	return authConf
+}
+
+
 // Builds primary app configuration object
 func BuildConfig() Configuration {
 
@@ -40,16 +52,5 @@ func BuildConfig() Configuration {
 
 	return conf
 
-}
-
-// Builds Auth configuration object
-func GetAuthConfig() AuthConfig {
-
-	authConf := AuthConfig{
-		AuthHost: os.Getenv("AuthHost"),
-		AuthSecret: os.Getenv("AuthSecret"),
-	}
-
-	return authConf
 }
 

@@ -1,0 +1,143 @@
+{
+  "listEndpoints": true,
+  "group": [
+    {
+      "name": "school",
+      "subgroup": [
+        {
+          "name": "general",
+          "routes": [
+            {
+              "path": "/",
+              "method": "GET",
+              "endpoint-type": "query",
+              "access": [
+                "All"
+              ],
+              "query": "SELECT (SELECT count(u.id) FROM People.Users u ) as users, (SELECT count(c.id) from School.Courses c) as courses",
+              "description": "Gets total counts of various records"
+            },
+            {
+              "path": "/get-token",
+              "method": "GET",
+              "endpoint-type": "function",
+              "access": [
+                "All"
+              ],
+              "function": "GetTokenHandler",
+              "description": "Gets token"
+            },
+            {
+              "path": "/missing-function",
+              "method": "GET",
+              "endpoint-type": "function",
+              "access": [
+                "All"
+              ],
+              "function": "MissingFunction",
+              "description": "Tests missing function"
+            }
+          ]
+        },
+        {
+          "name": "courses",
+          "routes": [
+            {
+              "path": "/courses",
+              "method": "GET",
+              "endpoint-type": "query",
+              "access": [
+                "All"
+              ],
+              "query": "SELECT c.id, c.code, c.name, c.description FROM School.Courses c",
+              "params": [],
+              "description": "Lists all existing courses"
+            },
+            {
+              "path": "/courses/{course_id}",
+              "method": "GET",
+              "endpoint-type": "query",
+              "access": [
+                "All"
+              ],
+              "query": "SELECT c.id, c.code, c.name, c.description FROM School.Courses c WHERE c.id = {{course_id}}",
+              "params": [
+                "course_id"
+              ],
+              "description": "Lists existing course by ID"
+            },
+            {
+              "path": "/courses/{course_id}/sessions",
+              "method": "GET",
+              "endpoint-type": "query",
+              "access": [
+                "All"
+              ],
+              "query": "SELECT cs.id, cs.session_number, cs.title, cs.description, cs.start_datetime FROM School.Courses c INNER JOIN School.Course_Sessions cs ON cs.course_id = c.id WHERE c.id = {{course_id}} ORDER BY cs.session_number",
+              "params": [
+                "course_id"
+              ],
+              "description": "Lists course sessions by ID"
+            }
+          ]
+        },
+        {
+          "name": "students",
+          "routes": [
+            {
+              "path": "/students",
+              "method": "GET",
+              "endpoint-type": "query",
+              "access": [
+                "Employee",
+                "Instructor"
+              ],
+              "query": "SELECT r.name, u.id, u.first_name, u.last_name, u.username, si.major, si.start_date FROM People.Users u INNER JOIN People.User_Roles ur on u.id = ur.user_id INNER JOIN Company.Roles r on ur.role_id = r.id LEFT JOIN School.Student_Info si on si.user_id = u.id WHERE r.name = 'Student'",
+              "description": "Lists all students"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "company",
+      "subgroup": [
+          {
+          "name": "employees",
+          "routes": [
+            {
+              "path": "/employees",
+              "method": "GET",
+              "endpoint-type": "query",
+              "access": [
+                "Employee"
+              ],
+              "query": "SELECT u.id, u.first_name, u.last_name, u.username, ei.title, ei.department, ei.manager_id, ei.start_date FROM People.Users u INNER JOIN People.User_Roles ur on u.id = ur.user_id INNER JOIN Company.Roles r on ur.role_id = r.id LEFT JOIN Company.Employee_Info ei on ei.user_id = u.id WHERE r.name = 'Employee'",
+              "description": "Lists all existing employees"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sales",
+      "subgroup": [
+          {
+          "name": "products",
+          "routes": [
+            {
+              "path": "/products",
+              "method": "GET",
+              "endpoint-type": "query",
+              "access": [
+                "All"
+              ],
+              "query": "SELECT p.id, cast(p.price as varchar) as price, p.name, p.category, p.description FROM Sales.Products p",
+              "description": "Lists all current products"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
