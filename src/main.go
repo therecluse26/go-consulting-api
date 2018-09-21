@@ -13,6 +13,7 @@ import (
 	"./controllers"
 	"os"
 	"strconv"
+	"github.com/getsentry/raven-go"
 )
 
 // Initializes variables in global scope
@@ -26,6 +27,8 @@ func init() {
 
 	// Pulls config variables
 	conf = mainconf.BuildConfig()
+
+	raven.SetDSN(conf.SentryHost)
 
 	/*AuthConf = mainconf.GetAuthConfig()
 

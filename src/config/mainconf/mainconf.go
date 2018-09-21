@@ -16,6 +16,7 @@ type Configuration struct {
 	SqlPass string `json:"SqlPass"`
 	SqlDB string `json:"SqlDB"`
 	ApiPort int `json:"ApiPort"`
+	SentryHost string `json:"SentryHost"`
 }
 
 type AuthConfig struct {
