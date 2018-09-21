@@ -5,36 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"../database"
-	"github.com/auth0/go-jwt-middleware"
 )
-
-func SetCourseRoutes(router *mux.Router, middleware *jwtmiddleware.JWTMiddleware){
-	// Course Routes
-	router.HandleFunc("/courses/all", GetAllCourseData).Methods("GET")
-	//router.Handle("/courses", middleware.Handler(GetCourses)).Methods("GET")
-
-	router.HandleFunc("/courses", GetCourses).Methods("GET")
-
-	router.HandleFunc("/courses", NewCourse).Methods("PUT")
-	router.HandleFunc("/courses/{course_id}", GetCourse).Methods("GET")
-	router.HandleFunc("/courses/{course_id}/grades", GetCourseGrades).Methods("GET")
-
-	router.HandleFunc("/courses/{course_id}/assignments", GetCourseAssignments).Methods("GET")
-
-
-	//router.HandleFunc("/courses/{code}", UpdateCourse).Methods("POST")
-	//router.HandleFunc("/courses/{code}", DeleteCourse).Methods("DELETE")
-	router.HandleFunc("/courses/{course_id}/registrants", GetCourseRegistrants).Methods("GET")
-
-	// Course Session Routes
-	router.HandleFunc("/courses/{course_id}/sessions", GetCourseSessions).Methods("GET")
-	router.HandleFunc("/courses/{course_id}/sessions", NewCourseSession).Methods("PUT")
-	router.HandleFunc("/courses/{course_id}/sessions/{session_id}", GetCourseSession).Methods("GET")
-	router.HandleFunc("/courses/{course_id}/sessions/{session_id}/assignments", GetSessionAssignments).Methods("GET")
-	//router.HandleFunc("/courses/{code}/sessions/{session_number}", UpdateCourseSession).Methods("POST")
-	//router.HandleFunc("/courses/{code}/sessions/{session_number}", DeleteCourseSession).Methods("DELETE")
-}
-
 
 func GetCourses(w http.ResponseWriter, r *http.Request){
 

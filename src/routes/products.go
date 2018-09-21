@@ -5,22 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"../database"
-	"github.com/auth0/go-jwt-middleware"
 )
-
-func SetProductRoutes(router *mux.Router, middleware *jwtmiddleware.JWTMiddleware){
-
-	// Product Paths
-	router.HandleFunc("/products", GetProducts).Methods("GET")
-	router.HandleFunc("/products/{id}", GetProduct).Methods("GET")
-	router.HandleFunc("/products/{id}", NewProduct).Methods("PUT")
-
-	// Order Paths
-	router.HandleFunc("/orders", GetOrders).Methods("GET")
-	router.HandleFunc("/orders/{id}", GetOrder).Methods("GET")
-	router.HandleFunc("/orders/{id}/details", GetOrderDetails).Methods("GET")
-
-}
 
 func GetProducts(w http.ResponseWriter, r *http.Request){
 

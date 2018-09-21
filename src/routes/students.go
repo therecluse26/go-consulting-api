@@ -5,16 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"../database"
-	"github.com/auth0/go-jwt-middleware"
 )
-
-func SetStudentRoutes(router *mux.Router, middleware *jwtmiddleware.JWTMiddleware){
-
-	// Student Paths
-	router.HandleFunc("/students", GetStudents).Methods("GET")
-	router.HandleFunc("/users/{id}/student_info", GetStudent).Methods("GET")
-	router.HandleFunc("/users/{id}/student", NewStudent).Methods("PUT")
-}
 
 func GetStudents(w http.ResponseWriter, r *http.Request){
 

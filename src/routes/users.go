@@ -5,22 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"../database"
-	"github.com/auth0/go-jwt-middleware"
 )
-
-func SetUserRoutes(router *mux.Router, middleware *jwtmiddleware.JWTMiddleware){
-	// User Paths
-	router.HandleFunc("/users", GetUsers).Methods("GET")
-	router.HandleFunc("/users", NewUser).Methods("PUT")
-	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
-	router.HandleFunc("/users/{id}/info", GetUserInfo).Methods("GET")
-	router.HandleFunc("/users/{id}/roles", GetUserRoles).Methods("GET")
-
-	// Role Paths
-	router.HandleFunc("/roles", GetRoles).Methods("GET")
-	router.HandleFunc("/roles/{id}", GetRole).Methods("GET")
-	router.HandleFunc("/roles/{id}/users", GetRoleUsers).Methods("GET")
-}
 
 func GetUsers(w http.ResponseWriter, r *http.Request){
 
