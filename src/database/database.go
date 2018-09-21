@@ -7,7 +7,7 @@ import (
 	"strings"
 	"../config/mainconf"
 	"net/http"
-	"log"
+	"../util"
 )
 
 var Dbconn *sql.DB
@@ -39,7 +39,7 @@ func DbSelect(dbconn *sql.DB, stmt Statement) (map[int]map[string]interface{}, e
 	// Runs Database query
 	rows, err := dbconn.Query(stmt.MergedStmt())
 	if err != nil {
-		fmt.Println(err.Error())
+		util.ErrorHandler(err)
 	}
 
 	cols, _ := rows.Columns()
@@ -68,7 +68,7 @@ func DbSelect(dbconn *sql.DB, stmt Statement) (map[int]map[string]interface{}, e
 		// Assigns values to pointers
 		err := rows.Scan(valuePtrs...)
 		if err != nil {
-			log.Fatal(err)
+			util.ErrorHandler(err)
 		}
 
 		// Assigns values to rowResult
