@@ -3,6 +3,9 @@ package routes
 import (
 	"github.com/gorilla/mux"
 	"github.com/auth0/go-jwt-middleware"
+	"net/http"
+	m "../middleware"
+	"github.com/urfave/negroni"
 )
 
 // GENERAL
@@ -31,7 +34,12 @@ func SetCourseRoutes(router *mux.Router, middleware *jwtmiddleware.JWTMiddleware
 
 	router.HandleFunc("/courses", NewCourse).Methods("PUT")
 	router.HandleFunc("/courses/{course_id}", GetCourse).Methods("GET")
-	router.HandleFunc("/courses/{course_id}/grades", GetCourseGrades).Methods("GET")
+	//router.HandleFunc("/courses/{course_id}/grades", GetCourseGrades).Methods("GET")
+
+	router.Handle("/courses/{course_id}/grades", negroni.New(
+		negroni.HandlerFunc(m.AuthMiddleware),
+		negroni.Wrap(http.HandlerFunc(GetCourseGrades)),
+	))
 
 	router.HandleFunc("/courses/{course_id}/assignments", GetCourseAssignments).Methods("GET")
 

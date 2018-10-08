@@ -15,13 +15,17 @@ type Configuration struct {
 	SqlUser string `json:"SqlUser"`
 	SqlPass string `json:"SqlPass"`
 	SqlDB string `json:"SqlDB"`
+	ApiHost string `json:ApiHost`
 	ApiPort int `json:"ApiPort"`
 	SentryHost string `json:"SentryHost"`
 }
 
 type AuthConfig struct {
-	AuthHost string
-	AuthSecret string
+	AuthHost string `json:AuthHost`
+	AuthClientId string `json:AuthClientId`
+	AuthSecret string `json:AuthSecret`
+	AuthAudience string `json:AuthAudience`
+	AuthTenant string `json:AuthTenant`
 }
 
 var configJson string
@@ -46,9 +50,13 @@ func BuildConfig() Configuration {
 // Builds Auth configuration object
 func GetAuthConfig() AuthConfig {
 
-	authConf := AuthConfig{
-		AuthHost: os.Getenv("AuthHost"),
-		AuthSecret: os.Getenv("AuthSecret"),
+	configJson = os.Getenv("AUTHCFG")
+
+	var authConf AuthConfig
+
+	err := json.Unmarshal([]byte(configJson), &authConf)
+	if err != nil {
+		fmt.Println("error:", err)
 	}
 
 	return authConf

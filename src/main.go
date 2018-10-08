@@ -11,22 +11,22 @@ import (
 	"./routes"
 	"./database"
 	"./controllers"
+	"./auth"
 	"os"
 	"strconv"
 	"github.com/getsentry/raven-go"
 )
 
 // Initializes variables in global scope
-var conf mainconf.Configuration
-var AuthConf mainconf.AuthConfig
+var conf = mainconf.BuildConfig()
 var Router *mux.Router
+var AuthRouter *mux.Router
 var RouteMap map[int]string
 var RouteCount = 1
 
 func init() {
 
 	// Pulls config variables
-	conf = mainconf.BuildConfig()
 
 	raven.SetDSN(conf.SentryHost)
 
@@ -34,7 +34,6 @@ func init() {
 
 	os.Setenv("AuthHost", AuthConf.AuthHost)
 	os.Setenv("AuthSecret", AuthConf.AuthSecret)*/
-
 
 	// Creates database connection
 	database.DbConnection(conf)
@@ -67,6 +66,10 @@ func main() {
 	routes.SetEmployeeRoutes(Router, controllers.JwtMiddleware)
 	routes.SetProductRoutes(Router, controllers.JwtMiddleware)
 	/*****************************/
+
+	Router.HandleFunc("/authenticate", auth.CreateTokenEndpoint).Methods("POST")
+	Router.HandleFunc("/protected", auth.ProtectedEndpoint).Methods("GET")
+	Router.HandleFunc("/test", auth.ValidateMiddleware(auth.TestEndpoint)).Methods("GET")
 
 	//fmt.Println(strconv.Itoa(conf.ApiPort))
 
