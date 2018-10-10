@@ -59,7 +59,6 @@ func main() {
 
 	Router.HandleFunc("/", routes.GetStats).Methods("GET")
 
-	Router.HandleFunc("/get-token", routes.GetTokenHandler).Methods("GET")
 	routes.SetCourseRoutes(Router, controllers.JwtMiddleware)
 	routes.SetUserRoutes(Router, controllers.JwtMiddleware)
 	routes.SetStudentRoutes(Router, controllers.JwtMiddleware)
@@ -68,6 +67,9 @@ func main() {
 	/*****************************/
 
 	Router.HandleFunc("/authenticate", auth.CreateTokenEndpoint).Methods("POST")
+	Router.HandleFunc("/authcallback", auth.AuthCallback).Methods("GET")
+	Router.HandleFunc("/login", auth.Login).Methods("GET")
+	Router.HandleFunc("/logout", auth.Logout).Methods("GET")
 	Router.HandleFunc("/protected", auth.ProtectedEndpoint).Methods("GET")
 	Router.HandleFunc("/test", auth.ValidateMiddleware(auth.TestEndpoint)).Methods("GET")
 

@@ -1,51 +1,100 @@
 package auth
 
 import (
-	"golang.org/x/oauth2"
+	"net/http"
+	"io/ioutil"
+	"encoding/json"
+	"../config/mainconf"
+	"net/url"
+	"log"
 	"fmt"
-	"context"
-	"golang.org/x/oauth2/microsoft"
+	"time"
 )
 
-func OAuth(redir_url string, code string) {
+var AuthConf = mainconf.GetAuthConfig()
+var Conf = mainconf.BuildConfig()
 
-	tenant := "b511c547-996d-4ea5-a743-64f4486b22bc"
-	ctx := context.Background()
-	conf := &oauth2.Config{
-		ClientID:     "c7ba4700-1b55-4563-b066-9d103d59efcc",
-		ClientSecret: "ZhBrzmAXreycvk+9s0Eqx58FPF0wO3a5Y2TiccTIgms=",
-		Scopes:       []string{"openid"},
-		Endpoint: microsoft.AzureADEndpoint(tenant),
-	}
+func AuthCallback(w http.ResponseWriter, r *http.Request) {
 
-	// Redirect user to consent page to ask for permission
-	// for the scopes specified above.
-	/*url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	authCode := r.URL.Query().Get("code")
 
-	fmt.Printf("Visit the URL for the auth dialog: %v", url)*/
-
-	// Use the authorization code that is pushed to the redirect
-	// URL. Exchange will do the handshake to retrieve the
-	// initial access token. The HTTP Client returned by
-	// conf.Client will refresh the token as necessary.
-
-	/*var code string
-	if _, err := fmt.Scan(&code); err != nil {
-		fmt.Println(err)
-	}*/
-
-	fmt.Println("Code: ")
-
-	fmt.Println(code)
-
-	tok, err := conf.Exchange(ctx, code)
+	AccToken, err := FetchAccessToken(authCode)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Println(tok)
+	fmt.Println(AccToken)
 
-	client := conf.Client(ctx, tok)
-	client.Get(redir_url)
+	SetCookie(w, "auth_token", AccToken)
+
+}
+
+func FetchAccessToken(auth_code string) (string, error){
+
+	tokenUrl := AuthConf.AuthHost+"/token"
+
+	resp, err := http.PostForm(tokenUrl, url.Values{
+		"client_id": {AuthConf.AuthClientId},
+		"client_secret": {AuthConf.AuthSecret},
+		"code": {auth_code},
+		"scope": {"https://graph.microsoft.com/.default"},
+		"grant_type": {"client_credentials"},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	defer resp.Body.Close()
+
+	rsBody, err := ioutil.ReadAll(resp.Body)
+
+	type WithAccToken struct {
+		AccessToken string `json:"access_token"`
+	}
+
+	var dat WithAccToken
+
+	err = json.Unmarshal(rsBody, &dat)
+	if err != nil {
+		return "",err
+	}
+
+	return dat.AccessToken, err
+}
+
+
+func Login(w http.ResponseWriter, r *http.Request){
+
+	url := AuthConf.AuthHost+"/authorize?client_id="+AuthConf.AuthClientId+"&response_type=code&response_mode=query&scope=openid&state=12345&redirect_uri="+Conf.ApiHost+"/authcallback"
+
+	http.Redirect(w, r, url, http.StatusSeeOther)
+
+}
+
+
+func Logout(w http.ResponseWriter, r *http.Request){
+
+	c := &http.Cookie{
+		Name: "auth_token",
+		Value:    "",
+		Path:     "/",
+		Expires: time.Unix(0, 0),
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, c)
+
+	url := AuthConf.AuthHost+"/logout?post_logout_redirect_uri="+Conf.ApiHost
+
+	http.Redirect(w, r, url, http.StatusSeeOther)
+
+}
+
+func ValidateToken(){
+
+}
+
+func RefreshToken(){
 
 }

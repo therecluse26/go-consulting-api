@@ -19,7 +19,7 @@ func GetToken(){
 
 }
 
-func RefreshToken(authHost string, clientId string, secret string, scope string, refresh_token string) (string,error){
+func asdf(authHost string, clientId string, secret string, scope string, refresh_token string) (string,error){
 
 	body := bytes.NewBuffer([]byte("grant_type=refresh_token&client_id="+clientId+"&client_secret="+secret+"&scope="+scope+"&refresh_token="+refresh_token))
 
@@ -49,9 +49,6 @@ func RefreshToken(authHost string, clientId string, secret string, scope string,
 	return dat.AccessToken,err
 }
 
-func Logout(){
-
-}
 
 func ProtectedEndpoint (w http.ResponseWriter, req *http.Request) {
 	params := req.URL.Query()
