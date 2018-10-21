@@ -12,7 +12,7 @@ func GetCourses(w http.ResponseWriter, r *http.Request){
 	sql := database.Statement{ Sql: `SELECT c.id, c.code, c.name, c.description 
 									FROM School.Courses c` }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -20,7 +20,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request){
 
 	sql := database.Statement{ Sql: "SELECT c.id, c.code, c.name, c.description FROM School.Courses c WHERE c.id = {{course_id}}", Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -58,7 +58,7 @@ func GetCourseSessions(w http.ResponseWriter, r *http.Request){
 										INNER JOIN School.Course_Sessions cs ON cs.course_id = c.id
 									WHERE c.id = {{course_id}} ORDER BY cs.session_number`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -69,7 +69,7 @@ func GetCourseSession(w http.ResponseWriter, r *http.Request){
 										INNER JOIN School.Course_Sessions cs ON cs.course_id = c.id
 									WHERE c.id = {{course_id}} and cs.id = {{session_id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 }
 
 func GetSessionAssignments(w http.ResponseWriter, r *http.Request){
@@ -80,7 +80,7 @@ func GetSessionAssignments(w http.ResponseWriter, r *http.Request){
 										INNER JOIN School.Course_Assignments ca ON ca.course_session_id = cs.id 
 									WHERE c.id = {{course_id}} and cs.id = {{session_id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 }
 
 
@@ -116,7 +116,7 @@ func GetCourseAssignments(w http.ResponseWriter, r *http.Request){
 										INNER JOIN School.Course_Sessions cs ON cs.course_id = c.id
 									WHERE c.id = {{course_id}} ORDER BY cs.session_number`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -128,7 +128,7 @@ func GetAllCourseData(w http.ResponseWriter, r *http.Request) {
     									WHERE cs.course_id = c.id ORDER BY cs.session_number FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) as sessions
 									FROM School.Courses c`}
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -140,7 +140,7 @@ func GetCourseRegistrants(w http.ResponseWriter, r *http.Request){
 										INNER JOIN People.Users u on u.id = cr.student_id
 									WHERE cr.course_id = {{course_id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -151,7 +151,7 @@ func GetCourseGrades(w http.ResponseWriter, r *http.Request){
 										cast(g.final_percentage as float) as final_percentage, g.final_grade 
 									FROM School.f_GetCourseGrades({{course_id}}) g`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 

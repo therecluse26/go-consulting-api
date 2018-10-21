@@ -16,7 +16,7 @@ func GetStudents(w http.ResponseWriter, r *http.Request){
 										LEFT JOIN School.Student_Info si on si.user_id = u.id
 									WHERE r.name = 'Student'` }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -30,7 +30,7 @@ func GetStudent(w http.ResponseWriter, r *http.Request){
 									WHERE r.name = 'Student' 
 										AND u.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 

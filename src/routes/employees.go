@@ -16,7 +16,7 @@ func GetEmployees(w http.ResponseWriter, r *http.Request){
 										LEFT JOIN Company.Employee_Info ei on ei.user_id = u.id
 									WHERE r.name = 'Employee'` }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -30,7 +30,7 @@ func GetEmployee(w http.ResponseWriter, r *http.Request){
 									WHERE r.name = 'Employee' 
 										AND u.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 

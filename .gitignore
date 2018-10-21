@@ -5,4 +5,5 @@ dist/*
 *.lock
 .idea
 config.json
-
+AUTHCFG.json
+CFGJSON.json

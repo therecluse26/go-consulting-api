@@ -11,7 +11,7 @@ func GetProducts(w http.ResponseWriter, r *http.Request){
 
 	sql := database.Statement{ Sql: `SELECT p.id, cast(p.price as varchar) as price, p.name, p.category, p.description FROM Sales.Products p` }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -19,7 +19,7 @@ func GetProduct(w http.ResponseWriter, r *http.Request){
 
 	sql := database.Statement{ Sql: `SELECT p.id, cast(p.price as varchar) as price, p.name, p.category, p.description FROM Sales.Products p WHERE p.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -64,7 +64,7 @@ func GetOrders(w http.ResponseWriter, r *http.Request){
 										INNER JOIN People.Users u on u.id = o.user_id
 									GROUP BY o.id, o.user_id, u.username, o.status, o.notes, o.created_on, o.updated_on` }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -79,7 +79,7 @@ func GetOrder(w http.ResponseWriter, r *http.Request){
 										WHERE o.id = {{id}}
 									GROUP BY o.id, o.user_id, u.username, o.status, o.notes, o.created_on, o.updated_on`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -96,6 +96,6 @@ func GetOrderDetails(w http.ResponseWriter, r *http.Request){
    											INNER JOIN People.Users u on u.id = o.user_id
   										WHERE o.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }

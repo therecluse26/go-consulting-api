@@ -1,13 +1,11 @@
 package auth
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
+	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/mitchellh/mapstructure"
-	"strings"
-	"github.com/gorilla/context"
+	"bytes"
+	"io/ioutil"
 )
 
 type User struct {
@@ -23,77 +21,42 @@ type Exception struct {
 	Message string `json:"message"`
 }
 
-func CreateTokenEndpoint(w http.ResponseWriter, req *http.Request) {
-	var user User
-	_ = json.NewDecoder(req.Body).Decode(&user)
+func DecodeJWT(jwt_token string)  {
 
-	fmt.Println(user)
+	jwt.DecodeSegment("payload")
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": user.Username,
-		"password": user.Password,
-	})
-	tokenString, error := token.SignedString([]byte("secret"))
-	if error != nil {
-		fmt.Println(error)
+}
+
+
+func GetTokenScope(tokUrl string, clientId string, secret string) (string,error){
+
+	body := bytes.NewBuffer([]byte("grant_type=client_credentials&client_id="+clientId+"&client_secret="+secret+"&response_type=token"))
+
+	req, err := http.NewRequest("POST",tokUrl,body)
+
+	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "",err
 	}
-	json.NewEncoder(w).Encode(JwtToken{Token: tokenString})
-}
 
-func Protected(w http.ResponseWriter, req *http.Request) {
-	params := req.URL.Query()
-	token, _ := jwt.Parse(params["token"][0], func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("There was an error")
-		}
-		return []byte("secret"), nil
-	})
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		var user User
-		mapstructure.Decode(claims, &user)
+	defer resp.Body.Close()
 
-		json.NewEncoder(w).Encode(user)
-	} else {
-		json.NewEncoder(w).Encode(Exception{Message: "Invalid authorization token"})
+	rsBody, err := ioutil.ReadAll(resp.Body)
+
+	type WithScope struct {
+		Scope string `json:"scope"`
 	}
-}
 
+	var dat WithScope
 
-func ValidateMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	err = json.Unmarshal(rsBody,&dat)
+	if err != nil {
+		return "",err
+	}
 
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		authorizationHeader := req.Header.Get("authorization")
-		if authorizationHeader != "" {
-			bearerToken := strings.Split(authorizationHeader, " ")
-			if len(bearerToken) == 2 {
-				token, error := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
-					if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-						return nil, fmt.Errorf("There was an error")
-					}
-					return []byte("secret"), nil
-				})
-				if error != nil {
-					json.NewEncoder(w).Encode(Exception{Message: error.Error()})
-					return
-				}
-				if token.Valid {
-					context.Set(req, "decoded", token.Claims)
-					next(w, req)
-				} else {
-					json.NewEncoder(w).Encode(Exception{Message: "Invalid authorization token"})
-				}
-			}
-		} else {
-			json.NewEncoder(w).Encode(Exception{Message: "An authorization header is required"})
-		}
-	})
-
-}
-
-
-func TestEndpoint(w http.ResponseWriter, req *http.Request) {
-	decoded := context.Get(req, "decoded")
-	var user User
-	mapstructure.Decode(decoded.(jwt.MapClaims), &user)
-	json.NewEncoder(w).Encode(user)
+	return dat.Scope,err
 }

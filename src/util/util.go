@@ -4,7 +4,15 @@ import (
 	"github.com/getsentry/raven-go"
 	"fmt"
 	"log"
+	"net/http"
+	"net/url"
 )
+
+type HandlerParams struct {
+	writ http.ResponseWriter
+	req *http.Request
+	ps url.Values
+}
 
 func ErrorHandler(err error){
 

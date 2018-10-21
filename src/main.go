@@ -15,14 +15,20 @@ import (
 	"os"
 	"strconv"
 	"github.com/getsentry/raven-go"
+	"github.com/urfave/negroni"
 )
 
 // Initializes variables in global scope
 var conf = mainconf.BuildConfig()
+
 var Router *mux.Router
+//var ProtectedRouter *mux.Router
+
 var AuthRouter *mux.Router
-var RouteMap map[int]string
-var RouteCount = 1
+var ProtectedRead *negroni.Handler
+var ProtectedCreate *negroni.Handler
+var ProtectedUpdate *negroni.Handler
+var ProtectedDelete *negroni.Handler
 
 func init() {
 
@@ -44,6 +50,13 @@ func init() {
 
 func main() {
 
+	// Initialize Middleware Handlers
+	/*ProtectedRead = negroni.New(negroni.HandlerFunc(auth.ProtectedEndpoint))
+	ProtectedCreate = negroni.New(negroni.HandlerFunc(auth.ProtectedEndpoint))
+	ProtectedUpdate = negroni.New(negroni.HandlerFunc(auth.ProtectedEndpoint))
+	ProtectedDelete = negroni.New(negroni.HandlerFunc(auth.ProtectedEndpoint))*/
+
+
 	// Handle all preflight requests
 	Router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -55,8 +68,6 @@ func main() {
 
 	/* Initialize Routing Paths */
 
-	//router.HandleFunc("/", ViewRoutes).Methods("GET")
-
 	Router.HandleFunc("/", routes.GetStats).Methods("GET")
 
 	routes.SetCourseRoutes(Router, controllers.JwtMiddleware)
@@ -66,12 +77,33 @@ func main() {
 	routes.SetProductRoutes(Router, controllers.JwtMiddleware)
 	/*****************************/
 
-	Router.HandleFunc("/authenticate", auth.CreateTokenEndpoint).Methods("POST")
 	Router.HandleFunc("/authcallback", auth.AuthCallback).Methods("GET")
-	Router.HandleFunc("/login", auth.Login).Methods("GET")
-	Router.HandleFunc("/logout", auth.Logout).Methods("GET")
-	Router.HandleFunc("/protected", auth.ProtectedEndpoint).Methods("GET")
-	Router.HandleFunc("/test", auth.ValidateMiddleware(auth.TestEndpoint)).Methods("GET")
+	Router.HandleFunc("/tokenvalidate", auth.ValidateToken).Methods("GET")
+	Router.HandleFunc("/login", auth.LoginOrg).Methods("GET")
+	Router.HandleFunc("/logout", auth.LogoutOrg).Methods("GET")
+	//Router.Handle("/protected", negroni.(auth.ProtectedEndpoint, routes.GetStats) ).Methods("GET")
+
+	//Router.HandleFunc("/protected", routes.GetStats).Methods("GET")
+	/*Router.Use(ProtectedRead)
+
+	//Actually set routes
+	ProtectedRead.UseHandler(Router)
+	ProtectedCreate.UseHandler(Router)
+	ProtectedUpdate.UseHandler(Router)
+	ProtectedDelete.UseHandler(Router)*/
+
+
+
+	protectedRouter := mux.NewRouter().PathPrefix("/protected").Subrouter().StrictSlash(true)
+	protectedRouter.HandleFunc("/", routes.GetStats) // "/subpath/"
+	protectedRouter.HandleFunc("/{course_id}", routes.GetCourse) // "/subpath/:id"
+	// "/subpath" is necessary to ensure the subRouter and main router linkup
+	Router.PathPrefix("/protected").Handler(negroni.New(
+		negroni.HandlerFunc(auth.ProtectedEndpoint),
+		negroni.Wrap(protectedRouter),
+	))
+
+
 
 	//fmt.Println(strconv.Itoa(conf.ApiPort))
 

@@ -107,7 +107,7 @@ func DbCreate (dbconn *sql.DB, stmt Statement) (sql.Result, error) {
 * Replaces strings following {{pattern}} with corresponding Param value for "pattern"
 */
 func (s *Statement) MergedStmt() string {
-	var sqlMerged string = s.Sql
+	var sqlMerged = s.Sql
 	for k, v := range s.Params {
 		sqlMerged = strings.Replace(sqlMerged, "{{" + k + "}}", v, -1)
 	}
@@ -117,7 +117,7 @@ func (s *Statement) MergedStmt() string {
 /**
 * Selects and formats select result sets as JSON
 */
-func SelectAndReturnJson (sql Statement, w http.ResponseWriter) {
+func SelectAndWriteJsonResponse(sql Statement, w http.ResponseWriter) {
 
 	// Gets result set from DbSelect method
 	result, err := DbSelect(Dbconn, sql)
@@ -132,4 +132,39 @@ func SelectAndReturnJson (sql Statement, w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(jsonString))
+}
+
+
+/**
+ * Selects a simple count from the database
+ */
+func SelectAndReturnCount (sql Statement) (int, error) {
+
+	result, err := SelectSingleCountValue(Dbconn, sql)
+
+	return result, err
+}
+
+
+func SelectSingleCountValue (dbconn *sql.DB, stmt Statement) (int, error) {
+
+	var count int
+
+	// Runs Database query
+	rows, err := dbconn.Query(stmt.MergedStmt())
+	if err != nil {
+		util.ErrorHandler(err)
+	}
+
+	// Selects first row
+	rows.Next()
+
+	// Inserts result into `count` variable
+	err = rows.Scan(&count)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return count, err
+
 }

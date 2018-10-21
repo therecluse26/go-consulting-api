@@ -12,7 +12,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request){
 	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username 
 									FROM People.Users u` }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -21,7 +21,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request){
 	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description 
 									FROM Company.Roles r` }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -30,7 +30,7 @@ func GetRole(w http.ResponseWriter, r *http.Request){
 	sql := database.Statement{ Sql: `SELECT r.id, r.name, r.description 
 										FROM Company.Roles r WHERE r.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -41,7 +41,7 @@ func GetRoleUsers(w http.ResponseWriter, r *http.Request){
 										INNER JOIN People.User_Roles ur on ur.user_id = u.id
 										INNER JOIN Company.Roles r on ur.role_id = r.id WHERE r.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -50,7 +50,7 @@ func GetUser(w http.ResponseWriter, r *http.Request){
 	sql := database.Statement{ Sql: `SELECT u.id, u.first_name, u.last_name, u.username 
 										FROM People.Users u WHERE u.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -63,7 +63,7 @@ func GetUserInfo(w http.ResponseWriter, r *http.Request){
 										INNER JOIN People.User_Info ui on ui.user_id = u.id
 									WHERE u.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
@@ -75,7 +75,7 @@ func GetUserRoles(w http.ResponseWriter, r *http.Request){
 											INNER JOIN People.Users u on ur.user_id = u.id 
 										WHERE u.id = {{id}}`, Params: mux.Vars(r) }
 
-	database.SelectAndReturnJson(sql, w)
+	database.SelectAndWriteJsonResponse(sql, w)
 
 }
 
