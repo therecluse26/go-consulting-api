@@ -20,15 +20,8 @@ import (
 
 // Initializes variables in global scope
 var conf = mainconf.BuildConfig()
-
 var Router *mux.Router
-//var ProtectedRouter *mux.Router
 
-var AuthRouter *mux.Router
-var ProtectedRead *negroni.Handler
-var ProtectedCreate *negroni.Handler
-var ProtectedUpdate *negroni.Handler
-var ProtectedDelete *negroni.Handler
 
 func init() {
 
@@ -98,14 +91,15 @@ func main() {
 	protectedRouter.HandleFunc("/", routes.GetStats) // "/subpath/"
 	protectedRouter.HandleFunc("/{course_id}", routes.GetCourse) // "/subpath/:id"
 	// "/subpath" is necessary to ensure the subRouter and main router linkup
+
 	Router.PathPrefix("/protected").Handler(negroni.New(
 		negroni.HandlerFunc(auth.ProtectedEndpoint),
 		negroni.Wrap(protectedRouter),
 	))
 
 
-
-	//fmt.Println(strconv.Itoa(conf.ApiPort))
+	// Updates access policies from database on a loop every x seconds
+	auth.LoadAccessPolicyLoopTimer(10)
 
 	fmt.Println("Listening on port " + strconv.Itoa(conf.ApiPort))
 
