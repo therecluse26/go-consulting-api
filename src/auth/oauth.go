@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"../config/mainconf"
 	"net/url"
-	"log"
 	"time"
 	"fmt"
+	"../util"
 )
 
 var AuthConf = mainconf.GetAuthConfig()
@@ -20,7 +20,7 @@ func AuthCallback(w http.ResponseWriter, r *http.Request) {
 
 	AccToken, err := FetchAccessToken(authCode)
 	if err != nil {
-		fmt.Println(err)
+		util.ErrorHandler(err)
 	}
 
 	fmt.Println(AccToken)*/
@@ -43,7 +43,7 @@ func AuthCallback(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func FetchAccessToken(auth_code string) (string, error){
+func FetchAccessToken(auth_code string) (string){
 
 	tokenUrl := AuthConf.AuthHost+"/token"
 
@@ -56,7 +56,7 @@ func FetchAccessToken(auth_code string) (string, error){
 	})
 
 	if err != nil {
-		log.Println(err)
+		util.ErrorHandler(err)
 	}
 
 	defer resp.Body.Close()
@@ -71,10 +71,10 @@ func FetchAccessToken(auth_code string) (string, error){
 
 	err = json.Unmarshal(rsBody, &dat)
 	if err != nil {
-		return "",err
+		util.ErrorHandler(err)
 	}
 
-	return dat.AccessToken, err
+	return dat.AccessToken
 }
 
 
@@ -134,11 +134,6 @@ func LogoutB2C(w http.ResponseWriter, r *http.Request){
 
 }
 
-func ValidateToken(w http.ResponseWriter, r *http.Request){
-
-	fmt.Println(r.URL.Query().Get("id_token"))
-
-}
 
 func RefreshToken(){
 

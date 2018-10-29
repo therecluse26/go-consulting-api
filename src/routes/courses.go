@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"../database"
+	"../util"
 )
 
 func GetCourses(w http.ResponseWriter, r *http.Request){
@@ -41,6 +42,7 @@ func NewCourse(w http.ResponseWriter, r *http.Request){
 		res["status"] = "error"
 		res["data"] = err.Error()
 		returnVal, _ := json.Marshal(res)
+		util.ErrorHandler(err)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(returnVal))
 	} else {
@@ -99,6 +101,7 @@ func NewCourseSession(w http.ResponseWriter, r *http.Request){
 		res["status"] = "error"
 		res["data"] = err.Error()
 		returnVal, _ := json.Marshal(res)
+		util.ErrorHandler(err)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(returnVal))
 	} else {

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/auth0/go-jwt-middleware"
 	"os"
+	"../util"
 )
 
 type Response struct {
@@ -32,6 +33,7 @@ func GetPemCert(token *jwt.Token) (string, error) {
 	resp, err := http.Get(os.Getenv("AuthHost") + ".well-known/jwks.json")
 
 	if err != nil {
+		util.ErrorHandler(err)
 		return cert, err
 	}
 	defer resp.Body.Close()
@@ -40,6 +42,7 @@ func GetPemCert(token *jwt.Token) (string, error) {
 	err = json.NewDecoder(resp.Body).Decode(&jwks)
 
 	if err != nil {
+		util.ErrorHandler(err)
 		return cert, err
 	}
 
@@ -76,7 +79,7 @@ var JwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 
 		cert, err := GetPemCert(token)
 		if err != nil {
-			panic(err.Error())
+			util.ErrorHandler(err)
 		}
 
 		result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))

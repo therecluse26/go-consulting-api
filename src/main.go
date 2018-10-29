@@ -71,7 +71,7 @@ func main() {
 	/*****************************/
 
 	Router.HandleFunc("/authcallback", auth.AuthCallback).Methods("GET")
-	Router.HandleFunc("/tokenvalidate", auth.ValidateToken).Methods("GET")
+	//Router.HandleFunc("/tokenvalidate", auth.ValidateToken).Methods("GET")
 	Router.HandleFunc("/login", auth.LoginOrg).Methods("GET")
 	Router.HandleFunc("/logout", auth.LogoutOrg).Methods("GET")
 	//Router.Handle("/protected", negroni.(auth.ProtectedEndpoint, routes.GetStats) ).Methods("GET")
@@ -99,7 +99,8 @@ func main() {
 
 
 	// Updates access policies from database on a loop every x seconds
-	auth.LoadAccessPolicyLoopTimer(10)
+	auth.LoadAccessPolicyLoopTimer(30)
+	auth.CacheAccessKeysTimer(30, "local_env")
 
 	fmt.Println("Listening on port " + strconv.Itoa(conf.ApiPort))
 

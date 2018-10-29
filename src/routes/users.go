@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"../database"
+	"../util"
 )
 
 func GetUsers(w http.ResponseWriter, r *http.Request){
@@ -96,9 +97,11 @@ func NewUser(w http.ResponseWriter, r *http.Request){
 		res["status"] = "error"
 		res["data"] = err.Error()
 		returnVal, _ := json.Marshal(res)
+		util.ErrorHandler(err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(returnVal))
+
 	} else {
 		res["status"] = "success"
 		returnVal, _ := json.Marshal(res)

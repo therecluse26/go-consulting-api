@@ -6,6 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"bytes"
 	"io/ioutil"
+	"../util"
 )
 
 type User struct {
@@ -27,7 +28,6 @@ func DecodeJWT(jwt_token string)  {
 
 }
 
-
 func GetTokenScope(tokUrl string, clientId string, secret string) (string,error){
 
 	body := bytes.NewBuffer([]byte("grant_type=client_credentials&client_id="+clientId+"&client_secret="+secret+"&response_type=token"))
@@ -40,7 +40,7 @@ func GetTokenScope(tokUrl string, clientId string, secret string) (string,error)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "",err
+		util.ErrorHandler(err)
 	}
 
 	defer resp.Body.Close()
@@ -55,7 +55,7 @@ func GetTokenScope(tokUrl string, clientId string, secret string) (string,error)
 
 	err = json.Unmarshal(rsBody,&dat)
 	if err != nil {
-		return "",err
+		util.ErrorHandler(err)
 	}
 
 	return dat.Scope,err

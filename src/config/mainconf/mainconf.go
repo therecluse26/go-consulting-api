@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 	"encoding/json"
-	"fmt"
+	"../../util"
 )
 
 var Dbconn *sql.DB
@@ -40,7 +40,7 @@ func BuildConfig() Configuration {
 
 	err := json.Unmarshal([]byte(configJson), &conf)
 	if err != nil {
-		fmt.Println("error:", err)
+		util.ErrorHandler(err)
 	}
 
 	return conf
@@ -56,7 +56,7 @@ func GetAuthConfig() AuthConfig {
 
 	err := json.Unmarshal([]byte(configJson), &authConf)
 	if err != nil {
-		fmt.Println("error:", err)
+		util.ErrorHandler(err)
 	}
 
 	return authConf

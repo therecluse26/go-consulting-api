@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"../database"
+	"../util"
 )
 
 func GetEmployees(w http.ResponseWriter, r *http.Request){
@@ -52,6 +53,7 @@ func NewEmployee(w http.ResponseWriter, r *http.Request){
 		res["status"] = "error"
 		res["data"] = err.Error()
 		returnVal, _ := json.Marshal(res)
+		util.ErrorHandler(err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(returnVal))

@@ -27,7 +27,7 @@ func DbConnection(conf mainconf.Configuration) {
 
 	Dbconn, Dberr = sql.Open("mssql", dsn)
 	if Dberr != nil {
-		fmt.Println(Dberr.Error())
+		util.ErrorHandler(Dberr)
 	}
 }
 
@@ -122,6 +122,7 @@ func SelectAndWriteJsonResponse(sql Statement, w http.ResponseWriter) {
 	// Gets result set from DbSelect method
 	result, err := DbSelect(Dbconn, sql)
 	if err != nil {
+		util.ErrorHandler(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
@@ -134,6 +135,33 @@ func SelectAndWriteJsonResponse(sql Statement, w http.ResponseWriter) {
 	w.Write([]byte(jsonString))
 }
 
+/**
+* Selects and returns simple result set
+*/
+func SelectAndReturnResultSet(sql Statement) (map[int]map[string]interface{}, error) {
+
+	// Gets result set from DbSelect method
+	result, err := DbSelect(Dbconn, sql)
+
+	return result, err
+}
+
+/**
+* Selects and returns simple result set
+*/
+func ExecuteRawQuery(stmt string) error {
+
+	sql := Statement{ Sql: stmt }
+
+	// Executes Database query
+	_, err := Dbconn.Query(sql.Sql)
+	if err != nil {
+		util.ErrorHandler(err)
+	}
+
+	return err
+}
+
 
 /**
  * Selects a simple count from the database
@@ -144,6 +172,7 @@ func SelectAndReturnCount (sql Statement) (int, error) {
 
 	return result, err
 }
+
 
 
 func SelectSingleCountValue (dbconn *sql.DB, stmt Statement) (int, error) {
@@ -162,7 +191,7 @@ func SelectSingleCountValue (dbconn *sql.DB, stmt Statement) (int, error) {
 	// Inserts result into `count` variable
 	err = rows.Scan(&count)
 	if err != nil {
-		fmt.Println(err)
+		util.ErrorHandler(err)
 	}
 
 	return count, err
