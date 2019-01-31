@@ -15,21 +15,22 @@ type Configuration struct {
 	SqlUser string `json:"SqlUser"`
 	SqlPass string `json:"SqlPass"`
 	SqlDB string `json:"SqlDB"`
-	ApiHost string `json:ApiHost`
+	ApiHost string `json:"ApiHost"`
 	ApiPort int `json:"ApiPort"`
+	AllowedOrigins []string `json:"AllowedOrigins"`
+	CacheMethod string `json:"CacheMethod"`
 	SentryHost string `json:"SentryHost"`
 }
 
 type AuthConfig struct {
-	AuthHost string `json:AuthHost`
-	AuthClientId string `json:AuthClientId`
-	AuthSecret string `json:AuthSecret`
-	AuthAudience string `json:AuthAudience`
-	AuthTenant string `json:AuthTenant`
+	AuthHost string `json:"AuthHost"`
+	AuthClientId string `json:"AuthClientId"`
+	AuthSecret string `json:"AuthSecret"`
+	AuthAudience string `json:"AuthAudience"`
+	AuthTenant string `json:"AuthTenant"`
 }
 
 var configJson string
-var configMap map[string]string
 
 // Builds primary app configuration object
 func BuildConfig() Configuration {

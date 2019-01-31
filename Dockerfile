@@ -10,7 +10,7 @@ COPY dist/fortisure-api /app/
 
 COPY nginx/fortisureapi-nginx.conf /etc/nginx/conf.d/fortisureapi-nginx.conf
 
-CMD /bin/sh -c "apk update && apk add nginx certbot"
+CMD /bin/sh -c "apk update && apk add nginx certbot memcached"
 
 CMD /bin/sh -c "wget https://github.com/jwilder/docker-gen/releases/download/0.7.3/docker-gen-alpine-linux-amd64-0.7.3.tar.gz nginx/docker-gen-alpine-linux-amd64-0.7.3.tar.gz && tar xvzf nginx/docker-gen-alpine-linux-amd64-0.7.3.tar.gz"
 
@@ -18,11 +18,13 @@ CMD /bin/sh -c "wget https://dl.eff.org/certbot-auto && chmod a+x certbot-auto &
 
 CMD /bin/sh -c "export CFGJSON=$(echo $gocfg64 | base64 -d)"
 
-CMD /bin/sh -c "echo $CFGJSON"
+CMD /bin/sh -c "memcached -u root -d -p 11211"
+
+# CMD /bin/sh -c "echo $CFGJSON"
 
 ENTRYPOINT ["./fortisure-api"]
 
 EXPOSE 80/tcp
 EXPOSE 80/udp
 EXPOSE 443/tcp
-EXPOSE 443/udp.
+EXPOSE 443/udp

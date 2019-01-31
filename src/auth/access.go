@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"../util"
 	"os"
+	"io/ioutil"
 )
 
 
@@ -23,12 +24,46 @@ var conf = mainconf.BuildConfig()
 var gormAdapter = gormadapter.NewAdapter("mssql", "sqlserver://"+conf.SqlUser+":"+url.QueryEscape(conf.SqlPass)+"@"+conf.SqlHost+":"+strconv.Itoa(conf.SqlPort)+"?database="+conf.SqlDB, true)
 var AccessEnforcer = casbin.NewEnforcer("access_control_model.conf", gormAdapter)
 
+
+func ProtectedEndpoint (w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+
+	cookie, err := r.Cookie("id_token")
+
+	fmt.Println(cookie)
+
+	if err != nil {
+		util.ErrorHandler(err)
+		w.WriteHeader(401)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	validToken, err := ValidateToken(cookie)
+	if !validToken {
+		util.ErrorHandler(err)
+		w.WriteHeader(401)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	accRes := verifyUserPermissions(cookie, r.URL.String(), r.Method)
+	if accRes != false {
+		next(w, r)
+	} else {
+		w.WriteHeader(401)
+		json.NewEncoder(w).Encode("User not authorized to access this resource")
+		return
+	}
+
+}
+
+
 /**
  * Pulls access keys from Azure endpoint and caches them in database
  */
-func CacheAccessKeys(cacheMethod string){
+func cacheAccessKeys(cacheMethod string){
 
-	keyMap, err := RetrieveAccessKeys()
+	keyMap, err := retrieveAccessKeysFromAzure()
 	if err != nil {
 		util.ErrorHandler(err)
 		return
@@ -58,7 +93,10 @@ func CacheAccessKeys(cacheMethod string){
 						ROLLBACK TRAN
 					END CATCH`
 
-		database.ExecuteRawQuery(sqlUpdate)
+		err := database.ExecuteRawQuery(sqlUpdate)
+		if err != nil {
+			util.ErrorHandler(err)
+		}
 
 
 	} else if cacheMethod == "local_env" {
@@ -68,19 +106,64 @@ func CacheAccessKeys(cacheMethod string){
 
 	} else if cacheMethod == "local_file" {
 
-		//jsonKeys := formatKeysAsJson(keyMap)
-		//os.Setenv("ACCESS_KEYS", jsonKeys)
+		jsonKeys := formatKeysAsJson(keyMap)
+		ioutil.WriteFile("access_keys", []byte(jsonKeys), 0664)
 
 	} else if cacheMethod == "memory" {
 
+		jsonKeys := formatKeysAsJson(keyMap)
+		database.MemcachedStore("access_keys", jsonKeys)
+
 	}
+}
+
+func RetrieveLocalAccessKeys(cacheMethod string) (string, error) {
+
+	var result string
+	var err error
+
+	if cacheMethod == "database" {
+
+		sql := database.Statement{Sql: "SELECT kid, x5c from dbo.access_keys"}
+		sqlResult, e := database.SelectAndReturnResultSet(sql)
+		if e != nil {
+			err = e
+		}
+
+		res, e := json.Marshal(sqlResult)
+		if err != nil {
+			err = e
+		}
+
+		result = string(res)
+
+	} else if cacheMethod == "local_env" {
+
+		result = os.Getenv("ACCESS_KEYS")
+		err = nil
+
+	} else if cacheMethod == "local_file" {
+
+		res, fileErr := ioutil.ReadFile("access_keys")
+
+		result = string(res)
+		err = fileErr
+
+
+	} else if cacheMethod == "memory" {
+
+		result, err = database.MemcachedRetrieve("access_keys")
+	}
+
+	return result, err
+
 }
 
 func formatKeysAsJson(keyMap map[string][]map[string]interface{}) string {
 	jsonKeys := "["
 	for _, val := range keyMap {
 		for _, v := range val {
-			jsonKeys += "{'kid': " + v["kid"].(string) + ", 'x5c': " + v["x5c"].([]interface{})[0].(string) + "},"
+			jsonKeys += `{"kid": ` + `"` + v["kid"].(string) + `"` + `, "x5c": ` + `"` + v["x5c"].([]interface{})[0].(string) + `"` + `},`
 		}
 	}
 	ln := len(jsonKeys)
@@ -94,7 +177,7 @@ func formatKeysAsJson(keyMap map[string][]map[string]interface{}) string {
 }
 
 
-func RetrieveAccessKeys() (map[string][]map[string]interface{}, error) {
+func retrieveAccessKeysFromAzure() (map[string][]map[string]interface{}, error) {
 	var openIdConf map[string]string
 	var keyMap map[string][]map[string]interface{}
 
@@ -123,7 +206,7 @@ func CacheAccessKeysTimer(seconds time.Duration, cacheMethod string) {
 		for {
 			select {
 			case <- timer.C:
-				CacheAccessKeys(cacheMethod)
+				cacheAccessKeys(cacheMethod)
 				fmt.Println("Refreshed Access Keys")
 			}
 		}
@@ -149,182 +232,69 @@ func LoadAccessPolicyLoopTimer(seconds time.Duration) {
 }
 
 
-func GetAccessKey(kid string) (string, error) {
+func getAccessKey(kid string) (string) {
 
-	var kidMap = make(map[string]string)
-	kidMap["kid"] = kid
+	var decodedKeys []map[string]string
+	var authKey = "-----BEGIN CERTIFICATE-----\n"
 
-	sql := database.Statement{ Sql: `SELECT x5c FROM dbo.access_keys WHERE kid = {{kid}}`, Params: kidMap}
-
-	sqlResult, err := database.SelectAndReturnResultSet(sql)
-
-	result := sqlResult[0]["x5c"]
-
-	return result.(string), err
-
-}
-
-func ValidateToken(cookie *http.Cookie) bool {
-
-	var authKey = `-----BEGIN CERTIFICATE-----\n`
-	claims := jwt.MapClaims{}
-
-
-	tkn, _ := jwt.Parse(cookie.Value, func(tkn *jwt.Token) (interface{}, error) {
-		return tkn, nil
-	})
-
-	jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error){
-		return []byte(AuthConf.AuthSecret), nil
-	})
-
-	// Gets key ID from JWT for validating against openid server
-	kid := tkn.Header["kid"]
-
-	cachedKey, err := GetAccessKey(kid.(string))
-
+	keys, err := RetrieveLocalAccessKeys(conf.CacheMethod)
 	if err != nil {
+
 		util.ErrorHandler(err)
-	}
 
-	authKey += cachedKey
-
-	authKey += `\n-----END CERTIFICATE-----\n`
-
-	tkn.SignedString(authKey)
-
-	valid := tkn.Valid
-
-	if valid != true {
-
-
-
-	}
-
-	return valid
-}
-
-func ProtectedEndpoint (w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-
-	cookie, err := r.Cookie("id_token")
-	if err != nil {
-		util.ErrorHandler(err)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	validToken := ValidateToken(cookie)
-
-	fmt.Println(validToken)
-
-	return
-
-	// Return from Token Decoding method here
-	/*claims := jwt.MapClaims{}
-
-	cookie, err := r.Cookie("id_token")
-	if err != nil {
-		util.ErrorHandler(err)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	//w.Write([]byte(cookie.Value))
-	//return
-
-	jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error){
-		return []byte(AuthConf.AuthSecret), nil
-	})
-
-
-	username := claims["unique_name"]
-
-	accRes := AccessEnforcer.Enforce(username, r.URL.String(), r.Method)
-	if accRes != false {
-		next(w, r)
-	} else {
-		w.WriteHeader(401)
-		json.NewEncoder(w).Encode("User not authorized to access this resource")
-		return
-	}*/
-
-	/*cookie, _ := r.Cookie("id_token")
-
-	token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
-
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("There was an error")
+		// Fetch remote key
+		remoteKeyMap, azerr := retrieveAccessKeysFromAzure()
+		if azerr != nil {
+			util.ErrorHandler(azerr)
+		}
+		for _, value := range remoteKeyMap["keys"] {
+			if value["kid"].(string) == kid {
+				authKey += value["x5c"].([]interface{})[0].(string)
+			}
 		}
 
 
-		//signed, err := token.SignedString(key)
+	} else {
 
+		// Fetch local key
+		json.Unmarshal([]byte(keys), &decodedKeys)
+		for _, val := range decodedKeys {
+			if val["kid"] == kid {
+				authKey += val["x5c"]
+			}
+		}
 
-		return signed, err
-	})
-
-
-
-	fmt.Println(token.Valid)
-
-	if err != nil {
-		util.ErrorHandler(err)
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		var user User
-		mapstructure.Decode(claims, &user)
-		json.NewEncoder(w).Encode(user)
-	} else {
-		json.NewEncoder(w).Encode(Exception{Message: "Invalid authorization token"})
-	}
+	authKey += "\n-----END CERTIFICATE-----\n"
 
-
-
-	/*if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		var user User
-		mapstructure.Decode(claims, &user)
-
-		json.NewEncoder(w).Encode(user)
-
-
-
-
-
-
-
-	} else {
-		w.Write([]byte(err.Error()))
-		json.NewEncoder(w).Encode(Exception{Message: "Invalid authorization token"})
-	}*/
+	return authKey
 
 }
 
+func ValidateToken(cookie *http.Cookie) (bool, error) {
 
+	tkn, err := jwt.Parse(cookie.Value, func(tkn *jwt.Token) (interface{}, error) {
+		if _, ok := tkn.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("Error parsing id token")
+		}
+		valid, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(getAccessKey(tkn.Header["kid"].(string))))
+		return valid, nil
+	})
 
+	return tkn.Valid, err
+}
 
-/********** DEPRECATED ***********
- * Checks if user has access to given method on a database object
- * `objectName` is fully qualified, e.g. Schema.Table
- */
-func CheckUserAccess(userName string, objectName string, method string) (int, error){
+func verifyUserPermissions (cookie *http.Cookie, url string, method string) bool {
+	claims := jwt.MapClaims{}
 
-	params := map[string]string{"userName": userName, "objectName": objectName, "method": method}
+	jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error){
+		return []byte(AuthConf.AuthSecret), nil
+	})
 
-	sql := database.Statement{ Sql: `SELECT count(ur.id) as result_count
-  										FROM People.Users u
-  										INNER JOIN Security.User_Roles ur on ur.user_id = u.id
-  										INNER JOIN Security.Roles r on r.id = ur.role_id
-										INNER JOIN Security.Object_Role_Permissions orp on orp.role_id = r.id
-  										INNER JOIN Security.Permissions p on p.id = orp.permission_id
-  										INNER JOIN Security.Objects o on o.id = orp.object_id
-									WHERE u.username = '{{userName}}'
-										AND o.schema_name + '.' + o.object_name = '{{objectName}}'
-  										AND p.name = '{{method}}'`, Params: params }
+	username := claims["unique_name"]
 
-	result, err := database.SelectAndReturnCount(sql)
-	if err != nil {
-		util.ErrorHandler(err)
-	}
+	accRes := AccessEnforcer.Enforce(username, url, method)
 
-	return result, err
+	return accRes
 }

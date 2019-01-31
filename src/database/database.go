@@ -12,6 +12,7 @@ import (
 
 var Dbconn *sql.DB
 var Dberr error
+var Conf = mainconf.BuildConfig()
 
 type Statement struct {
 	Sql string
@@ -126,12 +127,13 @@ func SelectAndWriteJsonResponse(sql Statement, w http.ResponseWriter) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
+
 	// Formats result set as JSON
 	jsonString, _ := json.Marshal(result)
 
-	// Writes JSON string to http.ResponseWriter
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Content-Type", "application/json")
+	// Writes JSON string to http.ResponseWriter
 	w.Write([]byte(jsonString))
 }
 

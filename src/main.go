@@ -12,98 +12,81 @@ import (
 	"./database"
 	"./controllers"
 	"./auth"
-	"os"
 	"strconv"
 	"github.com/getsentry/raven-go"
-	"github.com/urfave/negroni"
 )
 
 // Initializes variables in global scope
 var conf = mainconf.BuildConfig()
 var Router *mux.Router
-
+var ProtectedRouter *mux.Router
 
 func init() {
 
 	// Pulls config variables
-
 	raven.SetDSN(conf.SentryHost)
-
-	/*AuthConf = mainconf.GetAuthConfig()
-
-	os.Setenv("AuthHost", AuthConf.AuthHost)
-	os.Setenv("AuthSecret", AuthConf.AuthSecret)*/
 
 	// Creates database connection
 	database.DbConnection(conf)
 
+	// Initializes router
 	Router = mux.NewRouter().StrictSlash(true)
+
+	ProtectedRouter = mux.NewRouter().StrictSlash(true)
+
+	// Loads access policies from database on a loop every x seconds
+	auth.LoadAccessPolicyLoopTimer(600)
+
+	// Caches Azure auth keys on a timer
+	auth.CacheAccessKeysTimer(300, conf.CacheMethod)
+
 
 }
 
 func main() {
 
-	// Initialize Middleware Handlers
-	/*ProtectedRead = negroni.New(negroni.HandlerFunc(auth.ProtectedEndpoint))
-	ProtectedCreate = negroni.New(negroni.HandlerFunc(auth.ProtectedEndpoint))
-	ProtectedUpdate = negroni.New(negroni.HandlerFunc(auth.ProtectedEndpoint))
-	ProtectedDelete = negroni.New(negroni.HandlerFunc(auth.ProtectedEndpoint))*/
-
-
 	// Handle all preflight requests
 	Router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Methods", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Access-Control-Allow-Origin, Origin, User-Agent, Referer, Cache-Control, X-header")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Origin", conf.AllowedOrigins[1])
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.WriteHeader(http.StatusNoContent)
 		return
 	})
 
-	/* Initialize Routing Paths */
 
+	// Handle all preflight requests
+	ProtectedRouter.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Methods", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Access-Control-Allow-Origin, Origin, User-Agent, Referer, Cache-Control, X-header")
+		w.Header().Set("Access-Control-Allow-Origin", conf.AllowedOrigins[1])
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	})
+
+	// Initialize Routing Paths
 	Router.HandleFunc("/", routes.GetStats).Methods("GET")
 
-	routes.SetCourseRoutes(Router, controllers.JwtMiddleware)
-	routes.SetUserRoutes(Router, controllers.JwtMiddleware)
-	routes.SetStudentRoutes(Router, controllers.JwtMiddleware)
-	routes.SetEmployeeRoutes(Router, controllers.JwtMiddleware)
-	routes.SetProductRoutes(Router, controllers.JwtMiddleware)
+	// Set routes from individual routes files
+	routes.SetCourseRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
+	routes.SetUserRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
+	routes.SetStudentRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
+	routes.SetEmployeeRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
+	routes.SetProductRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
 	/*****************************/
 
 	Router.HandleFunc("/authcallback", auth.AuthCallback).Methods("GET")
-	//Router.HandleFunc("/tokenvalidate", auth.ValidateToken).Methods("GET")
 	Router.HandleFunc("/login", auth.LoginOrg).Methods("GET")
 	Router.HandleFunc("/logout", auth.LogoutOrg).Methods("GET")
-	//Router.Handle("/protected", negroni.(auth.ProtectedEndpoint, routes.GetStats) ).Methods("GET")
 
-	//Router.HandleFunc("/protected", routes.GetStats).Methods("GET")
-	/*Router.Use(ProtectedRead)
+	corsObj := handlers.AllowedOrigins(conf.AllowedOrigins)
 
-	//Actually set routes
-	ProtectedRead.UseHandler(Router)
-	ProtectedCreate.UseHandler(Router)
-	ProtectedUpdate.UseHandler(Router)
-	ProtectedDelete.UseHandler(Router)*/
-
-
-
-	protectedRouter := mux.NewRouter().PathPrefix("/protected").Subrouter().StrictSlash(true)
-	protectedRouter.HandleFunc("/", routes.GetStats) // "/subpath/"
-	protectedRouter.HandleFunc("/{course_id}", routes.GetCourse) // "/subpath/:id"
-	// "/subpath" is necessary to ensure the subRouter and main router linkup
-
-	Router.PathPrefix("/protected").Handler(negroni.New(
-		negroni.HandlerFunc(auth.ProtectedEndpoint),
-		negroni.Wrap(protectedRouter),
-	))
-
-
-	// Updates access policies from database on a loop every x seconds
-	auth.LoadAccessPolicyLoopTimer(30)
-	auth.CacheAccessKeysTimer(30, "local_env")
-
+	// Initialize http server
 	fmt.Println("Listening on port " + strconv.Itoa(conf.ApiPort))
 
-	http.ListenAndServe(":"+strconv.Itoa(conf.ApiPort), handlers.LoggingHandler(os.Stdout, Router))
+	http.ListenAndServe(":"+strconv.Itoa(conf.ApiPort), handlers.CORS(corsObj)(Router))
 
 }
+
