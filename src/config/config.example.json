@@ -5,5 +5,5 @@
   "sqlPass": "password123",
   "sqlDB": "Fortisure_Data",
   "apiPort": 9999,
-  "jwtSecret": "brad-secret"
+  "jwtSecret": "jwt-secret"
 }
