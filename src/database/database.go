@@ -127,14 +127,13 @@ func SelectAndWriteJsonResponse(sql Statement, w http.ResponseWriter) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-
 	// Formats result set as JSON
 	jsonString, _ := json.Marshal(result)
 
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Content-Type", "application/json")
 	// Writes JSON string to http.ResponseWriter
-	w.Write([]byte(jsonString))
+	_, err = w.Write([]byte(jsonString)); if err != nil{ fmt.Println(err) }
 }
 
 /**

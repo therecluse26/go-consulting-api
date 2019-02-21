@@ -17,24 +17,28 @@ import (
 	"io/ioutil"
 )
 
-
 var conf = mainconf.BuildConfig()
 
 // Instantiate access control handlers
 var gormAdapter = gormadapter.NewAdapter("mssql", "sqlserver://"+conf.SqlUser+":"+url.QueryEscape(conf.SqlPass)+"@"+conf.SqlHost+":"+strconv.Itoa(conf.SqlPort)+"?database="+conf.SqlDB, true)
-var AccessEnforcer = casbin.NewEnforcer("access_control_model.conf", gormAdapter)
+var AccessEnforcer = casbin.NewEnforcer("conf/access_control_model.conf", gormAdapter)
+var Conf = mainconf.BuildConfig()
 
-
+/**
+ * Protects endpoint and validates access token against ACL
+ */
 func ProtectedEndpoint (w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 
 	cookie, err := r.Cookie("id_token")
 
 	fmt.Println(cookie)
 
+	w.Header().Set("Content-Type", "application/json")
+
 	if err != nil {
 		util.ErrorHandler(err)
 		w.WriteHeader(401)
-		w.Write([]byte(err.Error()))
+		err := json.NewEncoder(w).Encode("401: " + err.Error()); if err!=nil{fmt.Println(err)}
 		return
 	}
 
@@ -42,7 +46,7 @@ func ProtectedEndpoint (w http.ResponseWriter, r *http.Request, next http.Handle
 	if !validToken {
 		util.ErrorHandler(err)
 		w.WriteHeader(401)
-		w.Write([]byte(err.Error()))
+		err := json.NewEncoder(w).Encode("401: " + err.Error()); if err!=nil{fmt.Println(err)}
 		return
 	}
 
@@ -51,7 +55,7 @@ func ProtectedEndpoint (w http.ResponseWriter, r *http.Request, next http.Handle
 		next(w, r)
 	} else {
 		w.WriteHeader(401)
-		json.NewEncoder(w).Encode("User not authorized to access this resource")
+		err := json.NewEncoder(w).Encode("401: " + err.Error()); if err!=nil{fmt.Println(err)}
 		return
 	}
 
@@ -107,7 +111,7 @@ func cacheAccessKeys(cacheMethod string){
 	} else if cacheMethod == "local_file" {
 
 		jsonKeys := formatKeysAsJson(keyMap)
-		ioutil.WriteFile("access_keys", []byte(jsonKeys), 0664)
+		ioutil.WriteFile("conf/access_keys", []byte(jsonKeys), 0664)
 
 	} else if cacheMethod == "memory" {
 
@@ -144,7 +148,7 @@ func RetrieveLocalAccessKeys(cacheMethod string) (string, error) {
 
 	} else if cacheMethod == "local_file" {
 
-		res, fileErr := ioutil.ReadFile("access_keys")
+		res, fileErr := ioutil.ReadFile("conf/access_keys")
 
 		result = string(res)
 		err = fileErr
@@ -276,7 +280,7 @@ func ValidateToken(cookie *http.Cookie) (bool, error) {
 
 	tkn, err := jwt.Parse(cookie.Value, func(tkn *jwt.Token) (interface{}, error) {
 		if _, ok := tkn.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Error parsing id token")
+			return nil, fmt.Errorf("error parsing id token")
 		}
 		valid, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(getAccessKey(tkn.Header["kid"].(string))))
 		return valid, nil
@@ -289,8 +293,9 @@ func verifyUserPermissions (cookie *http.Cookie, url string, method string) bool
 	claims := jwt.MapClaims{}
 
 	jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error){
-		return []byte(AuthConf.AuthSecret), nil
+		return []byte(Conf.AuthSecret), nil
 	})
+
 
 	username := claims["unique_name"]
 

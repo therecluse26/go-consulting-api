@@ -1,6 +1,6 @@
 #!/bin/sh
 
-mkdir -p /var/www/fortisureapi
+mkdir -p /var/www/go_consulting_api
 
 docker pull quay.io/letsencrypt/letsencrypt
 
@@ -11,10 +11,10 @@ docker run -it --rm --name letsencrypt \
   quay.io/letsencrypt/letsencrypt \
   certonly \
   --webroot \
-  --webroot-path /var/www/fortisureapi \
+  --webroot-path /var/www/go_consulting_api \
   --agree-tos \
   --renew-by-default \
-  -d http://fortisureapi.eastus.azurecontainer.io \
-  -m brad.magyar@fortisureit.com
+  -d http://go_consulting_api.eastus.azurecontainer.io \
+  -m {{ user_email }}
 
 docker kill --signal=HUP {{ proxy_docker_container }}

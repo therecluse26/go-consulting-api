@@ -1,11 +1,11 @@
-package routes
+package sales
 
 import (
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"../database"
-	"../util"
+	"../../database"
+	"../../util"
 )
 
 func GetProducts(w http.ResponseWriter, r *http.Request){

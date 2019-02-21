@@ -26,14 +26,14 @@ else
 
 fi
 
-AZUSER=FortisureAPI
+AZUSER=GoAPI
 CONT_GROUP_NAME=rest-api
-CONT_IMG=fortisureapi.azurecr.io/rest-api-go
+CONT_IMG=go_consulting_api.azurecr.io/rest-api-go
 LOCATION=eastus
-DNSLBL=fortisureapi
+DNSLBL=go_consulting_api
 RES_GROUP=Container_Resources
-ACR_NAME=fortisureapi.azurecr.io
-AKV_NAME=FortisureKeys
+ACR_NAME=go_consulting_api.azurecr.io
+AKV_NAME=ConsultingKeys
 
 echo "Environment Variable JSON (Base64 encoded):"
 read ENV_VARS

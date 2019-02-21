@@ -1,9 +1,0 @@
-{
-  "sqlHost": "127.0.0.1",
-  "sqlPort": 1433,
-  "sqlUser": "sql_user",
-  "sqlPass": "password123",
-  "sqlDB": "Fortisure_Data",
-  "apiPort": 9999,
-  "jwtSecret": "jwt-secret"
-}

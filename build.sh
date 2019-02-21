@@ -4,7 +4,7 @@ set -ex
 
 # SET THE FOLLOWING VARIABLES
 # docker hub username
-USERNAME=fortisureapi
+USERNAME=GoAPI
 # image name
 IMAGE=rest-api-go
 
@@ -43,7 +43,7 @@ if [ $EXIT_STATUS == 0 ]; then
   docker tag $USERNAME/$IMAGE:latest $USERNAME.azurecr.io/$IMAGE:latest
 
 
-  az acr login --name FortisureAPI
+  az acr login --name GoAPI
 
   docker push $USERNAME.azurecr.io/$IMAGE:$version
   docker push $USERNAME.azurecr.io/$IMAGE:latest

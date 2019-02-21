@@ -1,10 +1,10 @@
 USE master;
 
-DROP DATABASE IF EXISTS Fortisure_Dev;
+DROP DATABASE IF EXISTS Consulting_DB;
 
-CREATE DATABASE Fortisure_Dev;
+CREATE DATABASE Consulting_DB;
 
-USE Fortisure_Dev;
+USE Consulting_DB;
 
   GO
 CREATE SCHEMA Accounts
@@ -553,27 +553,23 @@ INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'Emplo
 INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'Employees', '/courses/:course_id/sessions/:session_id', 'GET', '', '', '');
 INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'Employees', '/courses', 'GET', '', '', '');
 INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'Public', '/publicendpoint', 'GET', '', '', '');
-INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('g', 'Brandon.Taylor@fortisureit.com', 'Employees', '', '', '', '');
-INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('g', 'Test.Patterson@fortisureit.com', 'Public', '', '', '', '');
+INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('g', 'Test.Patterson@testytest.com', 'Public', '', '', '', '');
 INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'Employees', '/protected', 'GET', null, null, null);
-INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('g', 'Brad.Magyar@fortisureit.com', 'Admins', null, null, null, null);
+INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('g', 'therecluse26@protonmail.com', 'Admins', null, null, null, null);
 INSERT INTO dbo.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'Admins', '/*', 'GET|PUT|POST|DELETE', null, null, null);
 
 
 SET IDENTITY_INSERT People.Users ON;
-INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (1, 'Brad', 'Magyar', 'Brad.Magyar', 'f1936400-aebc-4468-b4f7-401dd10eb06a');
-INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (2, 'Scott', 'Arnold', 'Scott.Arnold', '3e23f737-f866-4e45-90b8-dcef8b71954e');
-INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (3, 'Brandon', 'Taylor', 'Brandon.Taylor', 'dd159bf5-d9ea-458f-8009-dff30c89f4f3');
-INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (4, 'Test', 'Patterson', 'Test.Patterson', null);
-INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (5, 'Jonny', 'Karate', 'Jonny.Karate', null);
-INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (6, 'Bill', 'Brasky', 'Bill.Brasky', null);
+INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (1, 'The', 'Recluse', 'The.Recluse', 'f1936400-aebc-4468-b4f7-401dd10eb06a');
+INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (2, 'Test', 'Patterson', 'Test.Patterson', null);
+INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (3, 'Jonny', 'Karate', 'Jonny.Karate', null);
+INSERT INTO People.Users (id, first_name, last_name, username, ad_object_id) VALUES (4, 'Bill', 'Brasky', 'Bill.Brasky', null);
 SET IDENTITY_INSERT People.Users OFF;
 
 
 SET IDENTITY_INSERT People.User_Info ON;
-INSERT INTO People.User_Info (id, user_id, preferred_name, gender, date_of_birth, email, phone_primary, phone_secondary, address1, address2, city, state, zip, bio) VALUES (1, 1, 'Brad', 'Male', '1989-03-14', 'brad.magyar@fortisureit.com', '3306344281', null, '346 Center Rd', null, 'New Franklin', 'OH', '44319', 'Just a simple man trying to make his way in the universe');
-INSERT INTO People.User_Info (id, user_id, preferred_name, gender, date_of_birth, email, phone_primary, phone_secondary, address1, address2, city, state, zip, bio) VALUES (2, 2, 'Scott', 'Male', null, 'scott.arnold@fortisureit.com', null, null, null, null, null, null, null, null);
-INSERT INTO People.User_Info (id, user_id, preferred_name, gender, date_of_birth, email, phone_primary, phone_secondary, address1, address2, city, state, zip, bio) VALUES (3, 3, 'Brandon', 'Male', null, 'brandon.taylor@fortisureit.com', null, null, null, null, null, null, null, null);
+INSERT INTO People.User_Info (id, user_id, preferred_name, gender, date_of_birth, email, phone_primary, phone_secondary, address1, address2, city, state, zip, bio) VALUES (1, 1, 'The', 'Male', '1982-10-21', 'therecluse26@protonmail.com', '555-555-5555', null, '123 Test Ln', null, 'N Canton', 'OH', '44720', 'Just a simple man trying to make his way in the universe');
+INSERT INTO People.User_Info (id, user_id, preferred_name, gender, date_of_birth, email, phone_primary, phone_secondary, address1, address2, city, state, zip, bio) VALUES (2, 2, 'Test', 'Male', null, 'Test.Patterson@testytest.com', null, null, null, null, null, null, null, null);
 SET IDENTITY_INSERT People.User_Info OFF;
 
 
@@ -882,7 +878,6 @@ INSERT INTO Security.User_Roles (id, user_id, role_id) VALUES (2, 1, 3);
 INSERT INTO Security.User_Roles (id, user_id, role_id) VALUES (3, 2, 1);
 INSERT INTO Security.User_Roles (id, user_id, role_id) VALUES (4, 3, 2);
 INSERT INTO Security.User_Roles (id, user_id, role_id) VALUES (5, 4, 4);
-INSERT INTO Security.User_Roles (id, user_id, role_id) VALUES (6, 5, 4);
 SET IDENTITY_INSERT Security.User_Roles OFF;
 
 SET IDENTITY_INSERT Consulting.Categories ON;

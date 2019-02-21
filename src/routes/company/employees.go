@@ -1,11 +1,11 @@
-package routes
+package company
 
 import (
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"../database"
-	"../util"
+	"../../database"
+	"../../util"
 )
 
 func GetEmployees(w http.ResponseWriter, r *http.Request){

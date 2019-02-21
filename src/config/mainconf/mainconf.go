@@ -20,15 +20,13 @@ type Configuration struct {
 	AllowedOrigins []string `json:"AllowedOrigins"`
 	CacheMethod string `json:"CacheMethod"`
 	SentryHost string `json:"SentryHost"`
-}
-
-type AuthConfig struct {
 	AuthHost string `json:"AuthHost"`
 	AuthClientId string `json:"AuthClientId"`
 	AuthSecret string `json:"AuthSecret"`
 	AuthAudience string `json:"AuthAudience"`
 	AuthTenant string `json:"AuthTenant"`
 }
+
 
 var configJson string
 
@@ -48,18 +46,4 @@ func BuildConfig() Configuration {
 
 }
 
-// Builds Auth configuration object
-func GetAuthConfig() AuthConfig {
-
-	configJson = os.Getenv("AUTHCFG")
-
-	var authConf AuthConfig
-
-	err := json.Unmarshal([]byte(configJson), &authConf)
-	if err != nil {
-		util.ErrorHandler(err)
-	}
-
-	return authConf
-}
 

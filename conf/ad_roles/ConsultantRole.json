@@ -1,0 +1,15 @@
+{
+  "Name": "Consultant",
+  "IsCustom": true,
+  "Description": "Internal consultant",
+  "Actions": [
+	"*/read",
+        "Microsoft.Support/*"
+  ],
+  "NotActions": [],
+  "DataActions": [],
+  "NotDataActions": [],
+  "AssignableScopes": [
+    "/subscriptions/5f19bae8-cb2b-49b7-aef6-5a2de46bd2a9"
+  ]
+}

@@ -6,9 +6,9 @@ FROM iron/go
 WORKDIR /app
 
 # Now just add the binary
-COPY dist/fortisure-api /app/
+COPY dist/go_consulting_api /app/
 
-COPY nginx/fortisureapi-nginx.conf /etc/nginx/conf.d/fortisureapi-nginx.conf
+COPY nginx/go_consulting_api-nginx.conf /etc/nginx/conf.d/go_consulting_api-nginx.conf
 
 CMD /bin/sh -c "apk update && apk add nginx certbot memcached"
 
@@ -22,7 +22,7 @@ CMD /bin/sh -c "memcached -u root -d -p 11211"
 
 # CMD /bin/sh -c "echo $CFGJSON"
 
-ENTRYPOINT ["./fortisure-api"]
+ENTRYPOINT ["./go_consulting_api"]
 
 EXPOSE 80/tcp
 EXPOSE 80/udp

@@ -66,20 +66,15 @@ func main() {
 		return
 	})
 
-	// Initialize Routing Paths
-	Router.HandleFunc("/", routes.GetStats).Methods("GET")
-
 	// Set routes from individual routes files
+	routes.SetGeneralRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
 	routes.SetCourseRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
 	routes.SetUserRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
 	routes.SetStudentRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
 	routes.SetEmployeeRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
 	routes.SetProductRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
+	routes.SetConsultingRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
 	/*****************************/
-
-	Router.HandleFunc("/authcallback", auth.AuthCallback).Methods("GET")
-	Router.HandleFunc("/login", auth.LoginOrg).Methods("GET")
-	Router.HandleFunc("/logout", auth.LogoutOrg).Methods("GET")
 
 	corsObj := handlers.AllowedOrigins(conf.AllowedOrigins)
 

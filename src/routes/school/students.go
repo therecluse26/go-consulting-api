@@ -1,11 +1,11 @@
-package routes
+package school
 
 import (
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"../database"
-	"../util"
+	"../../database"
+	"../../util"
 )
 
 func GetStudents(w http.ResponseWriter, r *http.Request){

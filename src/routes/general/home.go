@@ -1,8 +1,8 @@
-package routes
+package general
 
 import (
 	"net/http"
-	"../database"
+	"../../database"
 )
 
 func GetStats(w http.ResponseWriter, r *http.Request){

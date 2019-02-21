@@ -1,0 +1,12 @@
+{
+  "sqlHost": "localhost",
+  "sqlPort": 1433,
+  "sqlUser": "sa",
+  "sqlDB": "Consulting_DB",
+  "apiHost": "http://localhost:9988",
+  "apiPort": 9988,
+  "sqlPass": "Asdfasdf123!@#",
+  "allowedOrigins": ["http://localhost:8080", "http://localhost:9988"],
+  "SentryHost": "https://{{sentry_host}}",
+  "cacheMethod": "local_file"
+}
