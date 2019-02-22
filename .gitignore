@@ -1,0 +1,9 @@
+src/config/config.development.json
+src/config/config.production.json
+src/config/config.test.json
+dist/*
+*.lock
+.idea
+config.json
+conf/AUTHCFG.json
+conf/CFGJSON.json
