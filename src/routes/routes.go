@@ -1,18 +1,58 @@
 package routes
 
 import (
-	"github.com/gorilla/mux"
-	"github.com/auth0/go-jwt-middleware"
-	"github.com/urfave/negroni"
 	"../auth"
-	"net/http"
-	"fmt"
-	"./school"
-	"./sales"
-	"./general"
 	"./company"
 	"./consulting"
+	"./general"
+	"./sales"
+	"./school"
+	"fmt"
+	"github.com/auth0/go-jwt-middleware"
+	"github.com/gorilla/mux"
+	"github.com/urfave/negroni"
+	"net/http"
+	"reflect"
+
 )
+
+type RouteType = func(w http.ResponseWriter, r *http.Request)
+type Loader = struct{
+	funcRef func(w http.ResponseWriter, r *http.Request)
+}
+
+func (routes *RouteConf) RegisterRoutes(router *mux.Router, protectedRouter *mux.Router, middleware *jwtmiddleware.JWTMiddleware){
+
+	for _, group := range routes.Group {
+
+		for _, subGroup := range group.SubGroup {
+
+			for _, route := range subGroup.Routes {
+
+				loader := Loader{}
+				//rt := RouteType(func(http.ResponseWriter, *http.Request){})
+
+				/*var inputs = make([]reflect.Value, len(route.Params))
+
+				for i, _ := range inputs {
+					inputs[i] = reflect.ValueOf(inputs[i])
+				}*/
+
+				fmt.Println(route.Function)
+
+				reflect.ValueOf(&loader.funcRef).MethodByName(route.Function)
+
+				router.HandleFunc(route.Path, loader.funcRef).Methods(route.HttpMethod)
+
+			}
+		}
+	}
+
+}
+
+
+
+
 
 // GENERAL
 func SetGeneralRoutes(router *mux.Router, protectedRouter *mux.Router, middleware *jwtmiddleware.JWTMiddleware){

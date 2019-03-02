@@ -20,6 +20,10 @@ import (
 var conf = mainconf.BuildConfig()
 var Router *mux.Router
 var ProtectedRouter *mux.Router
+var routeObj = routes.LoadRoutesFromFile("conf/routes.yml")
+
+type FuncLoader struct {}
+
 
 func init() {
 
@@ -66,6 +70,10 @@ func main() {
 		return
 	})
 
+	// Registers routes from routes.yml file
+	routeObj.RegisterRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
+
+	/*
 	// Set routes from individual routes files
 	routes.SetGeneralRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
 	routes.SetCourseRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
