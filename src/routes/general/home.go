@@ -2,8 +2,8 @@ package general
 
 import (
 	"net/http"
-	"../../database"
-)
+	"github.com/therecluse26/fortisure-api/src/database"
+	)
 
 func GetStats(w http.ResponseWriter, r *http.Request){
 

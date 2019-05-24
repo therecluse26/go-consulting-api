@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"github.com/auth0/go-jwt-middleware"
 	"os"
-	"../util"
+	"github.com/therecluse26/fortisure-api/src/util"
 )
 
 type Response struct {

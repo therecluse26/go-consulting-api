@@ -4,21 +4,26 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/urfave/negroni"
-	"../auth"
+	"github.com/therecluse26/fortisure-api/src/auth"
 	"net/http"
 	"fmt"
-	"./school"
-	"./sales"
-	"./general"
-	"./company"
-	"./consulting"
+	"github.com/therecluse26/fortisure-api/src/routes/school"
+	"github.com/therecluse26/fortisure-api/src/routes/sales"
+	"github.com/therecluse26/fortisure-api/src/routes/general"
+	"github.com/therecluse26/fortisure-api/src/routes/company"
+	"github.com/therecluse26/fortisure-api/src/routes/consulting"
+	"github.com/therecluse26/fortisure-api/src/util"
 )
 
 // GENERAL
 func SetGeneralRoutes(router *mux.Router, protectedRouter *mux.Router, middleware *jwtmiddleware.JWTMiddleware){
 	router.HandleFunc("/", general.GetStats).Methods("GET")
+
+	router.HandleFunc("/login", general.Login).Methods("GET")
+
 }
 
+// User-related routes
 func SetUserRoutes(router *mux.Router, protectedRouter *mux.Router, middleware *jwtmiddleware.JWTMiddleware){
 
 	// User Paths
@@ -64,10 +69,6 @@ func SetCourseRoutes(router *mux.Router, protectedRouter *mux.Router, middleware
 		))
 
 	protectedRouter.HandleFunc("/courses/{course_id:[0-9]+}/assignments", school.GetCourseAssignments).Methods("GET")
-		router.Path("/courses/{course_id:[0-9]+}/assignments").Handler(negroni.New(
-			negroni.HandlerFunc(auth.ProtectedEndpoint),
-			negroni.Wrap(protectedRouter),
-		))
 
 	protectedRouter.HandleFunc("/courses/{course_id:[0-9]+}/registrants", school.GetCourseRegistrants).Methods("GET")
 
@@ -79,10 +80,6 @@ func SetCourseRoutes(router *mux.Router, protectedRouter *mux.Router, middleware
 
 
 	protectedRouter.HandleFunc("/courses/{course_id:[0-9]+}/sessions/{session_id:[0-9]+}/assignments", school.GetSessionAssignments).Methods("GET")
-		router.Path("/courses/{course_id:[0-9]+}/sessions/{session_id:[0-9]+}/assignments").Handler(negroni.New(
-			negroni.HandlerFunc(auth.ProtectedEndpoint),
-			negroni.Wrap(protectedRouter),
-		))
 
 }
 
@@ -131,7 +128,10 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprintf(w, "404 - Not Found")
+	_, err := fmt.Fprintf(w, "404 - Not Found")
+	if err != nil {
+		util.ErrorHandler(err)
+	}
 }
 
 // https://login.microsoftonline.com/common/adminconsent?client_id=c7ba4700-1b55-4563-b066-9d103d59efcc&state=12345&redirect_uri=http://localhost:9988

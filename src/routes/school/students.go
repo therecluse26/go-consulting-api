@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"../../database"
-	"../../util"
+	"github.com/therecluse26/fortisure-api/src/database"
+	"github.com/therecluse26/fortisure-api/src/util"
 )
 
 func GetStudents(w http.ResponseWriter, r *http.Request){
@@ -37,14 +37,17 @@ func GetStudent(w http.ResponseWriter, r *http.Request){
 
 func NewStudent(w http.ResponseWriter, r *http.Request){
 
-	r.ParseForm()
+	err := r.ParseForm()
+	if err != nil {
+		util.ErrorHandler(err)
+	}
 
 	courseData := map[string]string{ "code": r.Form.Get("code"), "name": r.Form.Get("name"), "description": r.Form.Get("description")  }
 
 	sql := database.Statement{ Sql: `INSERT INTO People.User_Roles (user_id, role_id) VALUES ('{{id}}', (SELECT cast(r.id AS char(36)) FROM Company.Roles r WHERE r.name = 'Student'));
 										INSERT INTO School.Student_Info (user_id) VALUES ('{{id}}');`, Params: courseData }
 
-	_, err := database.DbCreate(database.Dbconn, sql)
+	_, err = database.DbCreate(database.Dbconn, sql)
 
 	res := map[string]string{}
 
@@ -56,14 +59,22 @@ func NewStudent(w http.ResponseWriter, r *http.Request){
 		util.ErrorHandler(err)
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(returnVal))
+		_, err := w.Write([]byte(returnVal))
+		if err != nil {
+			util.ErrorHandler(err)
+		}
 
 	} else {
 		res["status"] = "success"
 		returnVal, _ := json.Marshal(res)
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(returnVal))	}
+		_, err = w.Write([]byte(returnVal))
+		if err != nil {
+			util.ErrorHandler(err)
+		}
+	}
+
 
 }
 

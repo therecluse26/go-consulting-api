@@ -1,20 +1,21 @@
 package auth
 
 import (
-	"net/http"
-	"github.com/casbin/gorm-adapter"
-	"github.com/casbin/casbin"
-	"../config/mainconf"
-	"../database"
-	"strconv"
-	"net/url"
-	"time"
-	"github.com/dgrijalva/jwt-go"
-	"fmt"
 	"encoding/json"
-	"../util"
-	"os"
+	"fmt"
+	"github.com/casbin/casbin"
+	"github.com/casbin/gorm-adapter"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/therecluse26/fortisure-api/src/config/mainconf"
+	"github.com/therecluse26/fortisure-api/src/database"
+	"github.com/therecluse26/fortisure-api/src/util"
 	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
 var conf = mainconf.BuildConfig()
@@ -22,16 +23,17 @@ var conf = mainconf.BuildConfig()
 // Instantiate access control handlers
 var gormAdapter = gormadapter.NewAdapter("mssql", "sqlserver://"+conf.SqlUser+":"+url.QueryEscape(conf.SqlPass)+"@"+conf.SqlHost+":"+strconv.Itoa(conf.SqlPort)+"?database="+conf.SqlDB, true)
 var AccessEnforcer = casbin.NewEnforcer("conf/access_control_model.conf", gormAdapter)
-var Conf = mainconf.BuildConfig()
 
 /**
  * Protects endpoint and validates access token against ACL
  */
 func ProtectedEndpoint (w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 
-	cookie, err := r.Cookie("id_token")
+	var err error = nil
 
-	fmt.Println(cookie)
+	bearer := strings.Split(r.Header.Get("authorization"), "Bearer ")[1]
+
+	fmt.Println(bearer)
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -42,7 +44,7 @@ func ProtectedEndpoint (w http.ResponseWriter, r *http.Request, next http.Handle
 		return
 	}
 
-	validToken, err := ValidateToken(cookie)
+	validToken, err := ValidateToken(bearer)
 	if !validToken {
 		util.ErrorHandler(err)
 		w.WriteHeader(401)
@@ -50,7 +52,7 @@ func ProtectedEndpoint (w http.ResponseWriter, r *http.Request, next http.Handle
 		return
 	}
 
-	accRes := verifyUserPermissions(cookie, r.URL.String(), r.Method)
+	accRes := verifyUserPermissions(bearer, r.URL.String(), r.Method)
 	if accRes != false {
 		next(w, r)
 	} else {
@@ -106,12 +108,18 @@ func cacheAccessKeys(cacheMethod string){
 	} else if cacheMethod == "local_env" {
 
 		jsonKeys := formatKeysAsJson(keyMap)
-		os.Setenv("ACCESS_KEYS", jsonKeys)
+		err := os.Setenv("ACCESS_KEYS", jsonKeys)
+		if err != nil {
+			util.ErrorHandler(err)
+		}
 
 	} else if cacheMethod == "local_file" {
 
 		jsonKeys := formatKeysAsJson(keyMap)
-		ioutil.WriteFile("conf/access_keys", []byte(jsonKeys), 0664)
+		err := ioutil.WriteFile("conf/access_keys", []byte(jsonKeys), 0664)
+		if err != nil {
+			util.ErrorHandler(err)
+		}
 
 	} else if cacheMethod == "memory" {
 
@@ -190,11 +198,19 @@ func retrieveAccessKeysFromAzure() (map[string][]map[string]interface{}, error) 
 	if err != nil {
 		util.ErrorHandler(err)
 	}
-	json.NewDecoder(openIdConfRaw.Body).Decode(&openIdConf)
+
+	err = json.NewDecoder(openIdConfRaw.Body).Decode(&openIdConf)
+	if err != nil {
+		util.ErrorHandler(err)
+	}
+
 	jwksUri := openIdConf["jwks_uri"]
 	keyMapRaw, _ := http.Get(jwksUri)
 
-	json.NewDecoder(keyMapRaw.Body).Decode(&keyMap)
+	err = json.NewDecoder(keyMapRaw.Body).Decode(&keyMap)
+	if err != nil {
+		util.ErrorHandler(err)
+	}
 
 	return keyMap, err
 }
@@ -229,13 +245,18 @@ func LoadAccessPolicyLoopTimer(seconds time.Duration) {
 		for {
 			select {
 				case <- timer.C:
-				AccessEnforcer.LoadPolicy()
+				err := AccessEnforcer.LoadPolicy()
+				if err != nil {
+					util.ErrorHandler(err)
+				}
 			}
 		}
 	}()
 }
 
-
+/**
+ * Gets access key from list of Azure public keys
+ */
 func getAccessKey(kid string) (string) {
 
 	var decodedKeys []map[string]string
@@ -257,17 +278,19 @@ func getAccessKey(kid string) (string) {
 			}
 		}
 
-
 	} else {
 
 		// Fetch local key
-		json.Unmarshal([]byte(keys), &decodedKeys)
+		err := json.Unmarshal([]byte(keys), &decodedKeys)
+		if err != nil {
+			util.ErrorHandler(err)
+		}
+
 		for _, val := range decodedKeys {
 			if val["kid"] == kid {
 				authKey += val["x5c"]
 			}
 		}
-
 	}
 
 	authKey += "\n-----END CERTIFICATE-----\n"
@@ -276,26 +299,34 @@ func getAccessKey(kid string) (string) {
 
 }
 
-func ValidateToken(cookie *http.Cookie) (bool, error) {
+// Validates token against stored keys
+func ValidateToken(bearer string) (bool, error) {
 
-	tkn, err := jwt.Parse(cookie.Value, func(tkn *jwt.Token) (interface{}, error) {
+	tkn, err := jwt.Parse(bearer, func(tkn *jwt.Token) (interface{}, error) {
 		if _, ok := tkn.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("error parsing id token")
 		}
-		valid, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(getAccessKey(tkn.Header["kid"].(string))))
-		return valid, nil
+
+		key := getAccessKey(tkn.Header["kid"].(string))
+
+		// Validates keys against stored Azure keys
+		publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(key))
+
+		return publicKey, err
 	})
 
 	return tkn.Valid, err
 }
 
-func verifyUserPermissions (cookie *http.Cookie, url string, method string) bool {
+func verifyUserPermissions (bearer string, url string, method string) bool {
 	claims := jwt.MapClaims{}
 
-	jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error){
-		return []byte(Conf.AuthSecret), nil
+	_, err := jwt.ParseWithClaims(bearer, claims, func(token *jwt.Token) (interface{}, error){
+		return []byte(conf.AuthSecret), nil
 	})
-
+	if err != nil {
+		util.ErrorHandler(err)
+	}
 
 	username := claims["unique_name"]
 

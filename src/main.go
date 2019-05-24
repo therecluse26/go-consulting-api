@@ -1,19 +1,21 @@
 package main
 
 import (
-	_ "github.com/denisenkom/go-mssqldb"
-	"./config/mainconf"
-	_ "github.com/jinzhu/gorm/dialects/mssql"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/handlers"
 	"fmt"
-	"net/http"
-	"./routes"
-	"./database"
-	"./controllers"
-	"./auth"
-	"strconv"
+	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/getsentry/raven-go"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	_ "github.com/jinzhu/gorm/dialects/mssql"
+	"github.com/srikrsna/security-headers"
+	"github.com/therecluse26/fortisure-api/src/auth"
+	"github.com/therecluse26/fortisure-api/src/config/mainconf"
+	"github.com/therecluse26/fortisure-api/src/controllers"
+	"github.com/therecluse26/fortisure-api/src/database"
+	"github.com/therecluse26/fortisure-api/src/routes"
+	"github.com/therecluse26/fortisure-api/src/util"
+	"net/http"
+	"strconv"
 )
 
 // Initializes variables in global scope
@@ -21,10 +23,18 @@ var conf = mainconf.BuildConfig()
 var Router *mux.Router
 var ProtectedRouter *mux.Router
 
+// CSP Middleware for blocking favicon requests
+var csp = &secure.CSP{
+	Value: `img-src 'none'`,
+}
+
 func init() {
 
-	// Pulls config variables
-	raven.SetDSN(conf.SentryHost)
+	// Initializes sentry connection
+	err := raven.SetDSN(conf.SentryHost)
+	if err != nil {
+		util.ErrorHandler(err)
+	}
 
 	// Creates database connection
 	database.DbConnection(conf)
@@ -48,7 +58,7 @@ func main() {
 	// Handle all preflight requests
 	Router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Methods", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Access-Control-Allow-Origin, Origin, User-Agent, Referer, Cache-Control, X-header")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Access-Control-Allow-Origin, Origin, User-Agent, Referer, Cache-Control, X-header, Content-Security-Policy: img-src none")
 		w.Header().Set("Access-Control-Allow-Origin", conf.AllowedOrigins[1])
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.WriteHeader(http.StatusNoContent)
@@ -56,15 +66,16 @@ func main() {
 	})
 
 
-	// Handle all preflight requests
+	// Handle all preflight requests for protected router
 	ProtectedRouter.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Methods", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Access-Control-Allow-Origin, Origin, User-Agent, Referer, Cache-Control, X-header")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Access-Control-Allow-Origin, Origin, User-Agent, Referer, Cache-Control, X-header, Content-Security-Policy: img-src none")
 		w.Header().Set("Access-Control-Allow-Origin", conf.AllowedOrigins[1])
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.WriteHeader(http.StatusNoContent)
 		return
 	})
+
 
 	// Set routes from individual routes files
 	routes.SetGeneralRoutes(Router, ProtectedRouter, controllers.JwtMiddleware)
@@ -80,8 +91,10 @@ func main() {
 
 	// Initialize http server
 	fmt.Println("Listening on port " + strconv.Itoa(conf.ApiPort))
-
-	http.ListenAndServe(":"+strconv.Itoa(conf.ApiPort), handlers.CORS(corsObj)(Router))
+	err := http.ListenAndServe(":"+strconv.Itoa(conf.ApiPort), csp.Middleware()(handlers.CORS(corsObj)(Router)))
+	if err != nil {
+		panic(err)
+	}
 
 }
 

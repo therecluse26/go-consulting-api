@@ -1,7 +1,7 @@
 package consulting
 
 import (
-	"../../database"
+	"github.com/therecluse26/fortisure-api/src/database"
 	"github.com/gorilla/mux"
 	"net/http"
 )

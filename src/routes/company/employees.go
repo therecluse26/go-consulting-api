@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"../../database"
-	"../../util"
+	"github.com/therecluse26/fortisure-api/src/database"
+	"github.com/therecluse26/fortisure-api/src/util"
 )
 
 func GetEmployees(w http.ResponseWriter, r *http.Request){

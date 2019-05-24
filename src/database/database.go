@@ -2,12 +2,13 @@ package database
 
 import (
 	"database/sql"
+	_ "github.com/denisenkom/go-mssqldb"
 	"encoding/json"
 	"fmt"
 	"strings"
-	"../config/mainconf"
 	"net/http"
-	"../util"
+	"github.com/therecluse26/fortisure-api/src/config/mainconf"
+	"github.com/therecluse26/fortisure-api/src/util"
 )
 
 var Dbconn *sql.DB

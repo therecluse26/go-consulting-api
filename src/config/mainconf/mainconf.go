@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 	"encoding/json"
-	"../../util"
+	"github.com/therecluse26/fortisure-api/src/util"
 )
 
 var Dbconn *sql.DB

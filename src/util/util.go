@@ -2,9 +2,9 @@ package util
 
 import (
 	"github.com/getsentry/raven-go"
-	"fmt"
 	"net/http"
 	"net/url"
+	"fmt"
 )
 
 type HandlerParams struct {
